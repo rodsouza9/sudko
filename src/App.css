@@ -49,3 +49,11 @@
 .board {
     width: 310px;
 }
+
+.highlight {
+    background-color : #FAF1AA;
+}
+
+.contradict {
+    background-color : red;
+}
