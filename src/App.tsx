@@ -6,8 +6,6 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Square value={6} isPermanent={false} isHighlighted = {false} isContradicting={false} markings={[]} />
         <Board/>
       </header>
     </div>
@@ -27,7 +25,7 @@ type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 class Square extends React.Component<SquareProps, {}> {
     render() {
         return(
-            <div>{this.props.value}</div>
+            <div className="square">{this.props.value}</div>
         );
     }
 }
@@ -35,7 +33,7 @@ class Square extends React.Component<SquareProps, {}> {
 class Board extends React.Component<{}, {}> {
     render() {
         return(
-            this.renderSquares()
+            <div className="board">{this.renderSquares()}</div>
         );
     }
     renderSquares() {
