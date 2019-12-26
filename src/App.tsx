@@ -24,11 +24,21 @@ class Board extends React.Component<{}, BoardState> {
         highlights: [37],
         contradicts: [38],
     };
+
+    toggleSelectSquare(i: SquareAddress) {
+        this.setState( {
+            ...this.state,
+            highlights: [i],
+            }
+        );
+    }
+
     render() {
         return(
             <div className="board">{this.renderSquares()}</div>
         );
     }
+
     renderSquares() {
         let list = [];
         for (var i = 0; i < 81; i++) {
@@ -36,10 +46,13 @@ class Board extends React.Component<{}, BoardState> {
         }
         return list;
     }
+
     renderSquare(i: SquareAddress) {
         const isHighlighted = this.state.highlights.includes(i);
         const isContradicting = this.state.contradicts.includes(i);
-        return <Square value={i % 9 + 1 as SquareValue} isPermanent={false} isHighlighted = {isHighlighted} isContradicting={isContradicting} markings={[]} />;
+        return <Square value={i % 9 + 1 as SquareValue}
+        isPermanent={false} isHighlighted = {isHighlighted} isContradicting={isContradicting}
+        markings={[]} onClick={()=>{ this.toggleSelectSquare(i)}}/>;
     }
 }
 
@@ -49,20 +62,16 @@ interface SquareProps {
     isContradicting : boolean;
     value : SquareValue | null;
     markings: SquareValue[];
+    onClick: () => void;
 }
 
 type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
 class Square extends React.Component<SquareProps, {}> {
     render() {
-        if (this.props.isHighlighted) {
-            return(<div className="square highlight">{this.props.value}</div>);
-        }
-        else if (this.props.isContradicting) {
-            return(<div className="square contradict">{this.props.value}</div>);
-        }
+        let light : string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
         return(
-            <div className="square">{this.props.value}</div>
+            <div className={"square "+light} onClick={this.props.onClick}>{this.props.value}</div>
         );
     }
 }
