@@ -7,20 +7,44 @@ const App: React.FC = () => {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <Square value={6} isPermanent={false} isHighlighted = {false} isContradicting={false} markings={[]} />
+        <Board/>
       </header>
     </div>
   );
+}
+
+interface SquareProps {
+    isPermanent : boolean;
+    isHighlighted : boolean;
+    isContradicting : boolean;
+    value : SquareValue | null;
+    markings: SquareValue[];
+}
+
+type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
+
+class Square extends React.Component<SquareProps, {}> {
+    render() {
+        return(
+            <div>{this.props.value}</div>
+        );
+    }
+}
+
+class Board extends React.Component<{}, {}> {
+    render() {
+        return(
+            this.renderSquares()
+        );
+    }
+    renderSquares() {
+        let list = [];
+        for (var i = 0; i < 81; i++) {
+            list.push(<Square value={i % 9 + 1 as SquareValue} isPermanent={false} isHighlighted = {false} isContradicting={false} markings={[]} />);
+        }
+        return list;
+    }
 }
 
 export default App;
