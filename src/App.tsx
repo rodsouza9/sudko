@@ -16,11 +16,13 @@ type SquareAddress = number;
 
 interface BoardState {
     highlights: SquareAddress[];
+    contradicts: SquareAddress[];
 }
 
 class Board extends React.Component<{}, BoardState> {
     state: BoardState = {
         highlights: [37],
+        contradicts: [38],
     };
     render() {
         return(
@@ -36,7 +38,7 @@ class Board extends React.Component<{}, BoardState> {
     }
     renderSquare(i: SquareAddress) {
         const isHighlighted = this.state.highlights.includes(i);
-        const isContradicting = i%9==8;
+        const isContradicting = this.state.contradicts.includes(i);
         return <Square value={i % 9 + 1 as SquareValue} isPermanent={false} isHighlighted = {isHighlighted} isContradicting={isContradicting} markings={[]} />;
     }
 }
