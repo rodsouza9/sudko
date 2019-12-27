@@ -44,10 +44,24 @@
     border-width: 1px;
     border-color: blue;
     float: left;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 
 .board {
     width: 310px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: red;
+}
+
+.game {
+    border-style: solid;
+    border-width: 1px;
+    border-color: green;
+    display: flex;
 }
 
 .highlight {
@@ -56,4 +70,9 @@
 
 .contradict {
     background-color : red;
+}
+
+.mark {
+    width: 30%;
+    font-size: 0.1em;
 }
