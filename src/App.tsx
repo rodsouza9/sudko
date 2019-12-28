@@ -1,6 +1,7 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import Button from '@material-ui/core/Button';
 
 const App: React.FC = () => {
   return (
@@ -40,8 +41,36 @@ class Board extends React.Component<{}, BoardState> {
         return(
             <div className="game">
                 <div className="board">{this.renderSquares()}</div>
-                <div>
-                    <button> ro </button>
+                <div className="button-box">
+                    <div className="button-box-top">
+                        <div className="button-col">
+                            <Button className= "button" variant="contained">Normal</Button>
+                            <Button className= "button" variant="contained">Corner</Button>
+                            <Button className= "button" variant="contained">Undo</Button>
+                            <Button className= "button" variant="contained">Redo</Button>
+
+                        </div>
+                        <div className="button-num-pad">
+                            <Button className= "button" variant="contained">1</Button>
+                            <Button className= "button" variant="contained">2</Button>
+                            <Button className= "button" variant="contained">3</Button>
+                            <Button className= "button" variant="contained">4</Button>
+                            <Button className= "button" variant="contained">5</Button>
+                            <Button className= "button" variant="contained">6</Button>
+                            <Button className= "button" variant="contained">7</Button>
+                            <Button className= "button" variant="contained">8</Button>
+                            <Button className= "button" variant="contained">9</Button>
+                            <Button className= "button" variant="contained">DELETE</Button>
+                        </div>
+                    </div>
+                    <div className="button-box-bot">
+                        <Button variant="contained" color="primary">
+                          R E S T A R T
+                        </Button>
+                        <Button variant="contained" color="secondary">
+                          C H E C K
+                        </Button>
+                    </div>
                 </div>
             </div>
         );

@@ -38,8 +38,8 @@
 }
 
 .square {
-    width : 32px;
-    height: 32px;
+    width : 10.78%;
+    height: 10.78%;
     border-style: solid;
     border-width: 1px;
     border-color: blue;
@@ -50,18 +50,88 @@
     align-items: center;
 }
 
+.mark {
+    width: 33%;
+    height: 33%;
+    font-size: 0.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .board {
-    width: 310px;
+    width: 40%;
     border-style: solid;
     border-width: 1px;
     border-color: red;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .game {
+    width: 1500px;
+    height: 600px;
     border-style: solid;
     border-width: 1px;
     border-color: green;
     display: flex;
+    justify-content: space-around;
+}
+
+.button-box {
+    width: 40%;
+    border-style: solid;
+    border-width: 1px;
+    border-color: yellow;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.button-box-top{
+    width: 60%;
+    border-style: solid;
+    border-width: 1px;
+    border-color: red;
+    height: 35%;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.button-col{
+    width: 30%;
+    border-style: solid;
+    border-width: 1px;
+    border-color: white;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.button-num-pad{
+    width: 70%;
+    border-style: solid;
+    border-width: 1px;
+    border-color: green;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.button-box-bot{
+    width: 60%;
+    height: 7%;
+    border-style: solid;
+    border-width: 1px;
+    border-color: blue;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.button {
+    height: 20%;
 }
 
 .highlight {
@@ -72,7 +142,3 @@
     background-color : red;
 }
 
-.mark {
-    width: 30%;
-    font-size: 0.1em;
-}
