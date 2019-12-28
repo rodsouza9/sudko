@@ -44,24 +44,12 @@ class Board extends React.Component<{}, BoardState> {
                 <div className="button-box">
                     <div className="button-box-top">
                         <div className="button-col">
-                            <Button className= "button" variant="contained">Normal</Button>
-                            <Button className= "button" variant="contained">Corner</Button>
-                            <Button className= "button" variant="contained">Undo</Button>
-                            <Button className= "button" variant="contained">Redo</Button>
-
+                            <NormalButton/>
+                            <CornerButton/>
+                            <UndoButton/>
+                            <RedoButton/>
                         </div>
-                        <div className="button-num-pad">
-                            <Button className= "button" variant="contained">1</Button>
-                            <Button className= "button" variant="contained">2</Button>
-                            <Button className= "button" variant="contained">3</Button>
-                            <Button className= "button" variant="contained">4</Button>
-                            <Button className= "button" variant="contained">5</Button>
-                            <Button className= "button" variant="contained">6</Button>
-                            <Button className= "button" variant="contained">7</Button>
-                            <Button className= "button" variant="contained">8</Button>
-                            <Button className= "button" variant="contained">9</Button>
-                            <Button className= "button" variant="contained">DELETE</Button>
-                        </div>
+                        <Numpad/>
                     </div>
                     <div className="button-box-bot">
                         <Button variant="contained" color="primary">
@@ -137,6 +125,57 @@ class Square extends React.Component<SquareProps, {}> {
         }
     }
 }
+
+class Numpad extends React.Component<{}, {}> {
+    render() {
+        return (
+            <div className="button-num-pad">
+                <Button className= "button-num" variant="contained">1</Button>
+                <Button className= "button-num" variant="contained">2</Button>
+                <Button className= "button-num" variant="contained">3</Button>
+                <Button className= "button-num" variant="contained">4</Button>
+                <Button className= "button-num" variant="contained">5</Button>
+                <Button className= "button-num" variant="contained">6</Button>
+                <Button className= "button-num" variant="contained">7</Button>
+                <Button className= "button-num" variant="contained">8</Button>
+                <Button className= "button-num" variant="contained">9</Button>
+                <Button className= "button" variant="contained">DELETE</Button>
+            </div>
+        );
+    }
+}
+
+class NormalButton extends React.Component<{}, {}> {
+    render() {
+        return(
+            <Button className= "button" variant="contained">Normal</Button>
+        );
+    }
+}
+class CornerButton extends React.Component<{}, {}> {
+    render() {
+        return(
+            <Button className= "button" variant="contained">Corner</Button>
+        );
+    }
+}
+class UndoButton extends React.Component<{}, {}> {
+    render() {
+        return(
+            <Button className= "button" variant="contained">Undo</Button>
+        );
+    }
+}
+class RedoButton extends React.Component<{}, {}> {
+    render() {
+        return(
+            <Button className= "button" variant="contained">Redo</Button>
+        );
+    }
+}
+
+
+
 
 
 
