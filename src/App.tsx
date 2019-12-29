@@ -4,10 +4,20 @@ import './App.css';
 import Button from '@material-ui/core/Button';
 
 const App: React.FC = () => {
+  const vals =
+        [null,3   ,1   ,6   ,7   ,null,4   ,null,9   ,
+         null,null,null,8   ,3   ,null,null,null,null,
+         8   ,2   ,null,null,null,null,null,1   ,null,
+         null,7   ,4   ,null,null,8   ,1   ,6   ,null,
+         null,8   ,null,null,6   ,null,null,null,4   ,
+         9   ,null,2   ,null,null,null,null,7   ,3   ,
+         4   ,9   ,null,null,5   ,7   ,2   ,3   ,null,
+         2   ,null,null,null,9   ,null,5   ,null,7   ,
+         7   ,null,3   ,2   ,null,null,6   ,null,1   ] as (SquareValue | null)[];
   return (
     <div className="App">
       <header className="App-header">
-        <Board/>
+        <Board values={vals} />
       </header>
     </div>
   );
@@ -18,12 +28,20 @@ type SquareAddress = number;
 interface BoardState {
     highlights: SquareAddress[];
     contradicts: SquareAddress[];
+    permanentValues: SquareAddress[];
+    values: (SquareValue | null)[];
 }
 
-class Board extends React.Component<{}, BoardState> {
+interface BoardProps {
+    values: (SquareValue | null)[];
+}
+
+class Board extends React.Component<BoardProps, BoardState> {
     state: BoardState = {
         highlights: [37],
         contradicts: [38],
+        permanentValues: this.getPermanentValues(),
+        values: this.props.values,
     };
 
     /**
@@ -36,6 +54,28 @@ class Board extends React.Component<{}, BoardState> {
             }
         );
     }
+
+    getPermanentValues() : SquareAddress[] {
+        let list = [];
+        for (var i = 0; i < 81; i++) {
+            if (this.props.values[i]) {
+                list.push(i as SquareAddress);
+            }
+        }
+        return list;
+    }
+
+/*     convertUndefinedValues(): (SquareValue | null)[] {
+        let list = [];
+        for (var i = 0; i < 81; i++) {
+            if (this.props.values[i] == undefined) {
+                list.push(null);
+            } else {
+                list.push(this.props.values[i] as SquareValue);
+            }
+        }
+        return list;
+    } */
 
     render() {
         return(
@@ -76,7 +116,7 @@ class Board extends React.Component<{}, BoardState> {
         const isHighlighted = this.state.highlights.includes(i);
         const isContradicting = this.state.contradicts.includes(i);
         const marks = i % 9 + 1 == 7 ? [i%1 as SquareValue, i%5+1 as SquareValue, i%3+1 as SquareValue, i%8+1 as SquareValue] : [];
-        return <Square value={i % 9 + 1 as SquareValue}
+        return <Square value={this.state.values[i]}
         isPermanent={false} isHighlighted = {isHighlighted} isContradicting={isContradicting}
         markings={marks} onClick={()=>{ this.toggleSelectSquare(i)}}/>;
     }
@@ -124,6 +164,10 @@ class Square extends React.Component<SquareProps, {}> {
             );
         }
     }
+}
+
+interface NumpadProps {
+    onClickNum: () => void;
 }
 
 class Numpad extends React.Component<{}, {}> {
