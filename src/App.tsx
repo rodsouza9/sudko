@@ -40,7 +40,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     state: BoardState = {
         highlights: [37],
         contradicts: [38],
-        permanentValues: this.getPermanentValues(),
+        permanentValues: [],
         values: this.props.values,
     };
 
@@ -57,12 +57,25 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     getPermanentValues() : SquareAddress[] {
         let list = [];
-        for (var i = 0; i < 81; i++) {
+        for (let i = 0; i < 81; i++) {
             if (this.props.values[i]) {
                 list.push(i as SquareAddress);
             }
         }
         return list;
+    }
+
+    normalMarkSelectedSquares(i: SquareValue) {
+        for (let j = 0; j < this.state.highlights.length; j++) {
+            let addy : SquareAddress = this.state.highlights[j];
+            if (!this.state.permanentValues.includes(addy)) {
+                let newValues = JSON.parse(JSON.stringify(this.state.values));
+                newValues[addy] = i;
+                this.setState({
+                    values: newValues,
+                });
+            }
+        }
     }
 
 /*     convertUndefinedValues(): (SquareValue | null)[] {
@@ -78,6 +91,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     } */
 
     render() {
+        this.state.permanentValues = this.getPermanentValues();
         return(
             <div className="game">
                 <div className="board">{this.renderSquares()}</div>
@@ -89,7 +103,7 @@ class Board extends React.Component<BoardProps, BoardState> {
                             <UndoButton/>
                             <RedoButton/>
                         </div>
-                        <Numpad/>
+                        <Numpad onClickNum={(i: SquareValue) => {this.normalMarkSelectedSquares(i)}}/>
                     </div>
                     <div className="button-box-bot">
                         <Button variant="contained" color="primary">
@@ -106,7 +120,7 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     renderSquares() {
         let list = [];
-        for (var i = 0; i < 81; i++) {
+        for (let i = 0; i < 81; i++) {
             list.push(this.renderSquare(i));
         }
         return list;
@@ -117,7 +131,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         const isContradicting = this.state.contradicts.includes(i);
         const marks = i % 9 + 1 == 7 ? [i%1 as SquareValue, i%5+1 as SquareValue, i%3+1 as SquareValue, i%8+1 as SquareValue] : [];
         return <Square value={this.state.values[i]}
-        isPermanent={false} isHighlighted = {isHighlighted} isContradicting={isContradicting}
+        isPermanent={this.state.permanentValues.includes(i)} isHighlighted = {isHighlighted} isContradicting={isContradicting}
         markings={marks} onClick={()=>{ this.toggleSelectSquare(i)}}/>;
     }
 }
@@ -144,7 +158,7 @@ class Square extends React.Component<SquareProps, {}> {
     render() {
         let light : string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
         let marks : boolean[] = this.getMarks();
-        if (this.props.markings && this.props.markings.length) {
+        if (this.props.markings && this.props.markings.length &&!this.props.isPermanent) {
             return(
                 <div className={"square "+light} onClick={this.props.onClick}>
                     <div className="mark">{marks[1] ? 1 : null}</div>
@@ -167,22 +181,26 @@ class Square extends React.Component<SquareProps, {}> {
 }
 
 interface NumpadProps {
-    onClickNum: () => void;
+    onClickNum: (i: SquareValue) => void;
 }
 
-class Numpad extends React.Component<{}, {}> {
+class Numpad extends React.Component<NumpadProps, {}> {
+    renderNumButtons() {
+        let list = [];
+        for(let i = 1; i<=9; i++) {
+            list.push(this.renderNumButton(i as SquareValue));
+        }
+        return list;
+    }
+
+    renderNumButton(i: SquareValue) {
+        return <Button onClick={() => {this.props.onClickNum(i)}} className= "button-num" variant="contained">{i as number}</Button>
+    }
+
     render() {
         return (
             <div className="button-num-pad">
-                <Button className= "button-num" variant="contained">1</Button>
-                <Button className= "button-num" variant="contained">2</Button>
-                <Button className= "button-num" variant="contained">3</Button>
-                <Button className= "button-num" variant="contained">4</Button>
-                <Button className= "button-num" variant="contained">5</Button>
-                <Button className= "button-num" variant="contained">6</Button>
-                <Button className= "button-num" variant="contained">7</Button>
-                <Button className= "button-num" variant="contained">8</Button>
-                <Button className= "button-num" variant="contained">9</Button>
+                {this.renderNumButtons()}
                 <Button className= "button" variant="contained">DELETE</Button>
             </div>
         );
