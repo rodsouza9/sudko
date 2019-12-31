@@ -1,19 +1,19 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import Button from '@material-ui/core/Button';
+import Button from "@material-ui/core/Button";
+import React from "react";
+import "./App.css";
+import logo from "./logo.svg";
 
 const App: React.FC = () => {
   const vals =
-        [null,3   ,1   ,6   ,7   ,null,4   ,null,9   ,
-         null,null,null,8   ,3   ,null,null,null,null,
-         8   ,2   ,null,null,null,null,null,1   ,null,
-         null,7   ,4   ,null,null,8   ,1   ,6   ,null,
-         null,8   ,null,null,6   ,null,null,null,4   ,
-         9   ,null,2   ,null,null,null,null,7   ,3   ,
-         4   ,9   ,null,null,5   ,7   ,2   ,3   ,null,
-         2   ,null,null,null,9   ,null,5   ,null,7   ,
-         7   ,null,3   ,2   ,null,null,6   ,null,1   ] as (SquareValue | null)[];
+        [null, 3   , 1   , 6   , 7   , null, 4   , null, 9   ,
+         null, null, null, 8   , 3   , null, null, null, null,
+         8   , 2   , null, null, null, null, null, 1   , null,
+         null, 7   , 4   , null, null, 8   , 1   , 6   , null,
+         null, 8   , null, null, 6   , null, null, null, 4   ,
+         9   , null, 2   , null, null, null, null, 7   , 3   ,
+         4   , 9   , null, null, 5   , 7   , 2   , 3   , null,
+         2   , null, null, null, 9   , null, 5   , null, 7   ,
+         7   , null, 3   , 2   , null, null, 6   , null, 1   ] as Array<SquareValue | null>;
   return (
     <div className="App">
       <header className="App-header">
@@ -21,7 +21,7 @@ const App: React.FC = () => {
       </header>
     </div>
   );
-}
+};
 
 type SquareAddress = number;
 
@@ -29,34 +29,37 @@ interface BoardState {
     highlights: SquareAddress[];
     contradicts: SquareAddress[];
     permanentValues: SquareAddress[];
-    values: (SquareValue | null)[];
+    values: Array<SquareValue | null>;
 }
 
 interface BoardProps {
-    values: (SquareValue | null)[];
+    values: Array<SquareValue | null>;
 }
 
 class Board extends React.Component<BoardProps, BoardState> {
-    state: BoardState = {
+    public state: BoardState = {
         highlights: [37],
         contradicts: [38],
         permanentValues: [],
         values: this.props.values,
+        /**
+          * //TODO: CREATE marking state and transfer marking logic to board state.
+          */
     };
 
     /**
       * // TODO: other highlight functionality
       */
-    toggleSelectSquare(i: SquareAddress) {
+    public toggleSelectSquare(i: SquareAddress) {
         this.setState( {
             ...this.state,
             highlights: [i],
-            }
+            },
         );
     }
 
-    getPermanentValues() : SquareAddress[] {
-        let list = [];
+    public getPermanentValues(): SquareAddress[] {
+        const list = [];
         for (let i = 0; i < 81; i++) {
             if (this.props.values[i]) {
                 list.push(i as SquareAddress);
@@ -65,11 +68,11 @@ class Board extends React.Component<BoardProps, BoardState> {
         return list;
     }
 
-    normalMarkSelectedSquares(i: SquareValue) {
+    public normalMarkSelectedSquares(i: SquareValue) {
         for (let j = 0; j < this.state.highlights.length; j++) {
-            let addy : SquareAddress = this.state.highlights[j];
+            const addy: SquareAddress = this.state.highlights[j];
             if (!this.state.permanentValues.includes(addy)) {
-                let newValues = JSON.parse(JSON.stringify(this.state.values));
+                const newValues = JSON.parse(JSON.stringify(this.state.values));
                 newValues[addy] = i;
                 this.setState({
                     values: newValues,
@@ -78,24 +81,22 @@ class Board extends React.Component<BoardProps, BoardState> {
         }
     }
 
-    deleteSelectedSquares() : void {
-        for (let i = 0; i < this.state.highlights.length; i++) {
-            let addy : SquareAddress = this.state.highlights[i];
-            if (!this.state.permanentValues.includes(addy)) {
-                let newValues = JSON.parse(JSON.stringify(this.state.values));
-                if (newValues[addy]) {
-                    newValues[addy] = null;
-                }
+    public deleteSelectedSquares(): void {
+        const newValues = JSON.parse(JSON.stringify(this.state.values));
+        for (const address of this.state.highlights) {
+            if (!this.state.permanentValues.includes(address)) {
+                newValues[address] = null;
                 /**
-                  * //TODO: CREATE marking state and transfer marking logic to board state.
+                  * //TODO: if marking exist on first delete click
+                  * delete only value and show markings on second
+                  * click delete markings
                   */
-                this.setState({
-                    values: newValues,
-                });
             }
         }
+        this.setState({
+            values: newValues,
+        });
     }
-
 
 /*     convertUndefinedValues(): (SquareValue | null)[] {
         let list = [];
@@ -109,7 +110,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         return list;
     } */
 
-    render() {
+    public render() {
         this.state.permanentValues = this.getPermanentValues();
         return(
             <div className="game">
@@ -123,8 +124,8 @@ class Board extends React.Component<BoardProps, BoardState> {
                             <RedoButton/>
                         </div>
                         <Numpad
-                        onClickNum={(i: SquareValue) => {this.normalMarkSelectedSquares(i)}}
-                        onClickDel={() => {this.deleteSelectedSquares()}}
+                        onClickNum={(i: SquareValue) => {this.normalMarkSelectedSquares(i); }}
+                        onClickDel={() => {this.deleteSelectedSquares(); }}
                         />
                     </div>
                     <div className="button-box-bot">
@@ -140,29 +141,29 @@ class Board extends React.Component<BoardProps, BoardState> {
         );
     }
 
-    renderSquares() {
-        let list = [];
+    public renderSquares() {
+        const list = [];
         for (let i = 0; i < 81; i++) {
             list.push(this.renderSquare(i));
         }
         return list;
     }
 
-    renderSquare(i: SquareAddress) {
+    public renderSquare(i: SquareAddress) {
         const isHighlighted = this.state.highlights.includes(i);
         const isContradicting = this.state.contradicts.includes(i);
-        const marks = i % 9 + 1 == 7 ? [i%1 as SquareValue, i%5+1 as SquareValue, i%3+1 as SquareValue, i%8+1 as SquareValue] : [];
+        const marks = i % 9 + 1 == 7 ? [i % 1 as SquareValue, i % 5 + 1 as SquareValue, i % 3 + 1 as SquareValue, i % 8 + 1 as SquareValue] : [];
         return <Square value={this.state.values[i]}
         isPermanent={this.state.permanentValues.includes(i)} isHighlighted = {isHighlighted} isContradicting={isContradicting}
-        markings={marks} onClick={()=>{ this.toggleSelectSquare(i)}}/>;
+        markings={marks} onClick={() => { this.toggleSelectSquare(i); }}/>;
     }
 }
 
 interface SquareProps {
-    isPermanent : boolean;
-    isHighlighted : boolean;
-    isContradicting : boolean;
-    value : SquareValue | null;
+    isPermanent: boolean;
+    isHighlighted: boolean;
+    isContradicting: boolean;
+    value: SquareValue | null;
     markings: SquareValue[];
     onClick: () => void;
 }
@@ -170,19 +171,22 @@ interface SquareProps {
 type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
 class Square extends React.Component<SquareProps, {}> {
-    getMarks() : boolean[] {
-        let lst : boolean[] = [];
+    public getMarks(): boolean[] {
+        const lst: boolean[] = [];
         for (let i = 0; i < 9; i++) {
             lst[i] = this.props.markings.includes(i as SquareValue);
         }
         return lst;
     }
-    render() {
-        let light : string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
-        let marks : boolean[] = this.getMarks();
-        if (this.props.markings && this.props.markings.length &&!this.props.isPermanent && !this.props.value) {
+    public render() {
+        const light: string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
+        const marks: boolean[] = this.getMarks();
+        const displayMarkings: (boolean | 0) = // determine if markings or value should be displayed
+            this.props.markings && this.props.markings.length &&
+            !this.props.isPermanent && !this.props.value;
+        if (displayMarkings) {
             return(
-                <div className={"square "+light} onClick={this.props.onClick}>
+                <div className={"square " + light} onClick={this.props.onClick}>
                     <div className="mark">{marks[1] ? 1 : null}</div>
                     <div className="mark">{marks[2] ? 2 : null}</div>
                     <div className="mark">{marks[3] ? 3 : null}</div>
@@ -196,7 +200,7 @@ class Square extends React.Component<SquareProps, {}> {
             );
         } else {
             return(
-                <div className={"square "+light} onClick={this.props.onClick}>{this.props.value}</div>
+                <div className={"square " + light} onClick={this.props.onClick}>{this.props.value}</div>
             );
         }
     }
@@ -208,60 +212,55 @@ interface NumpadProps {
 }
 
 class Numpad extends React.Component<NumpadProps, {}> {
-    renderNumButtons() {
-        let list = [];
-        for(let i = 1; i<=9; i++) {
+    public renderNumButtons() {
+        const list = [];
+        for (let i = 1; i <= 9; i++) {
             list.push(this.renderNumButton(i as SquareValue));
         }
         return list;
     }
 
-    renderNumButton(i: SquareValue) {
-        return <Button onClick={() => {this.props.onClickNum(i)}} className= "button-num" variant="contained">{i as number}</Button>
+    public renderNumButton(i: SquareValue) {
+        return <Button onClick={() => {this.props.onClickNum(i); }} className="button-num" variant="contained">{i as number}</Button>;
     }
 
-    render() {
+    public render() {
         return (
             <div className="button-num-pad">
                 {this.renderNumButtons()}
-                <Button onClick={this.props.onClickDel} className= "button" variant="contained">DELETE</Button>
+                <Button onClick={this.props.onClickDel} className="button" variant="contained">DELETE</Button>
             </div>
         );
     }
 }
 
 class NormalButton extends React.Component<{}, {}> {
-    render() {
+    public render() {
         return(
             <Button className= "button" variant="contained">Normal</Button>
         );
     }
 }
 class CornerButton extends React.Component<{}, {}> {
-    render() {
+    public render() {
         return(
             <Button className= "button" variant="contained">Corner</Button>
         );
     }
 }
 class UndoButton extends React.Component<{}, {}> {
-    render() {
+    public render() {
         return(
             <Button className= "button" variant="contained">Undo</Button>
         );
     }
 }
 class RedoButton extends React.Component<{}, {}> {
-    render() {
+    public render() {
         return(
             <Button className= "button" variant="contained">Redo</Button>
         );
     }
 }
-
-
-
-
-
 
 export default App;
