@@ -26,8 +26,8 @@ const App: React.FC = () => {
 type SquareAddress = number;
 
 interface BoardState {
-    highlights: SquareAddress[];
-    contradicts: SquareAddress[];
+    highlights: Set<SquareAddress>;
+    contradicts: Set<SquareAddress>;
     values: Array<SquareValue | null>;
 }
 
@@ -37,8 +37,8 @@ interface BoardProps {
 
 class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
-        highlights: [37],
-        contradicts: [38],
+        highlights: new Set([37]),
+        contradicts: new Set([38]),
         values: [],
         /**
           * //TODO: CREATE marking state and transfer marking logic to board state.
@@ -51,7 +51,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     public toggleSelectSquare(i: SquareAddress) {
         this.setState( {
             ...this.state,
-            highlights: [i],
+            highlights: new Set([i]),
             },
         );
     }
@@ -64,8 +64,7 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public normalMarkSelectedSquares(i: SquareValue) {
         const newValues = JSON.parse(JSON.stringify(this.state.values));
-        for (let j = 0; j < this.state.highlights.length; j++) {
-            const address: SquareAddress = this.state.highlights[j];
+        for (const address of Array.from(this.state.highlights)) {
             if (!this.isPermanent(address)) {
                 newValues[address] = i;
             }
@@ -81,7 +80,7 @@ class Board extends React.Component<BoardProps, BoardState> {
       */
     public deleteSelectedSquares(): void {
         const newValues = JSON.parse(JSON.stringify(this.state.values));
-        for (const address of this.state.highlights) {
+        for (const address of Array.from(this.state.highlights)) {
             if (!this.isPermanent(address)) {
                 newValues[address] = null;
                 /**
@@ -131,8 +130,8 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public renderSquare(i: SquareAddress) {
-        const isHighlighted = this.state.highlights.includes(i);
-        const isContradicting = this.state.contradicts.includes(i);
+        const isHighlighted = this.state.highlights.has(i);
+        const isContradicting = this.state.contradicts.has(i);
         const marks = i % 9 + 1 == 7 ? [i % 1 as SquareValue, i % 5 + 1 as SquareValue, i % 3 + 1 as SquareValue, i % 8 + 1 as SquareValue] : [];
         return <Square
             value={this.isPermanent(i) ? this.props.permanentValues[i] : this.state.values[i]}
@@ -157,16 +156,23 @@ interface SquareProps {
 type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
 class Square extends React.Component<SquareProps, {}> {
-    public getMarks(): boolean[] {
-        const lst: boolean[] = [];
+    public getMarks(): (SquareValue | null)[] {
+        const lst: (SquareValue | null)[] = [];
         for (let i = 0; i < 9; i++) {
-            lst[i] = this.props.markings.includes(i as SquareValue);
+            lst[i] = this.props.markings.includes((i+1) as SquareValue) ? ((i+1) as SquareValue) : null;
         }
         return lst;
     }
+    public renderMarkings() {
+        const marks: (SquareValue | null)[] = this.getMarks();
+        const list = [];
+        for (let i = 0; i < 9; i++) {
+            list.push(<div className="mark">{marks[i]}</div>);
+        }
+        return list;
+    }
     public render() {
         const light: string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
-        const marks: boolean[] = this.getMarks();
         const displayMarkings: boolean = // determine if markings or value should be displayed
             this.props.markings &&
             this.props.markings.length != 0 &&
@@ -175,15 +181,7 @@ class Square extends React.Component<SquareProps, {}> {
         if (displayMarkings) {
             return(
                 <div className={"square " + light} onClick={this.props.onClick}>
-                    <div className="mark">{marks[1] ? 1 : null}</div>
-                    <div className="mark">{marks[2] ? 2 : null}</div>
-                    <div className="mark">{marks[3] ? 3 : null}</div>
-                    <div className="mark">{marks[4] ? 4 : null}</div>
-                    <div className="mark">{marks[5] ? 5 : null}</div>
-                    <div className="mark">{marks[6] ? 6 : null}</div>
-                    <div className="mark">{marks[7] ? 7 : null}</div>
-                    <div className="mark">{marks[8] ? 8 : null}</div>
-                    <div className="mark">{marks[9] ? 9 : null}</div>
+                    {this.renderMarkings()}
                 </div>
             );
         } else {
