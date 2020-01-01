@@ -64,7 +64,7 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public normalMarkSelectedSquares(i: SquareValue) {
         const newValues = JSON.parse(JSON.stringify(this.state.values));
-        for (const address of Array.from(this.state.highlights)) {
+        for (const address of this.state.highlights) {
             if (!this.isPermanent(address)) {
                 newValues[address] = i;
             }
@@ -80,7 +80,7 @@ class Board extends React.Component<BoardProps, BoardState> {
       */
     public deleteSelectedSquares(): void {
         const newValues = JSON.parse(JSON.stringify(this.state.values));
-        for (const address of Array.from(this.state.highlights)) {
+        for (const address of this.state.highlights) {
             if (!this.isPermanent(address)) {
                 newValues[address] = null;
                 /**
