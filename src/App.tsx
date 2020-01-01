@@ -37,17 +37,17 @@ interface BoardProps {
 
 class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
-        highlights: new Set([37]),
         contradicts: new Set([38]),
+        highlights: new Set([37]),
         values: [],
         /**
-          * //TODO: CREATE marking state and transfer marking logic to board state.
-          */
+         * //TODO: CREATE marking state and transfer marking logic to board state.
+         */
     };
 
     /**
-      * // TODO: other highlight functionality
-      */
+     * // TODO: other highlight functionality
+     */
     public toggleSelectSquare(i: SquareAddress) {
         this.setState( {
             ...this.state,
@@ -56,10 +56,8 @@ class Board extends React.Component<BoardProps, BoardState> {
         );
     }
 
-
-
     public isPermanent(i: SquareAddress): boolean {
-        return this.props.permanentValues[i] != null; //True if in permanentValues[i] != null
+        return this.props.permanentValues[i] != null; // True if in permanentValues[i] != null
     }
 
     public normalMarkSelectedSquares(i: SquareValue) {
@@ -76,18 +74,18 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     /**
-      * onClick for DELETE button
-      */
+     * onClick for DELETE button
+     */
     public deleteSelectedSquares(): void {
         const newValues = JSON.parse(JSON.stringify(this.state.values));
         for (const address of this.state.highlights) {
             if (!this.isPermanent(address)) {
                 newValues[address] = null;
                 /**
-                  * //TODO: if marking exist on first delete click
-                  * delete only value and show markings on second
-                  * click delete markings
-                  */
+                 * //TODO: if marking exist on first delete click
+                 * delete only value and show markings on second
+                 * click delete markings
+                 */
             }
         }
         this.setState({
@@ -136,10 +134,10 @@ class Board extends React.Component<BoardProps, BoardState> {
         return <Square
             value={this.isPermanent(i) ? this.props.permanentValues[i] : this.state.values[i]}
             isPermanent={this.isPermanent(i)}
-            isHighlighted = {isHighlighted}
+            isHighlighted={isHighlighted}
             isContradicting={isContradicting}
             markings={marks}
-            onClick={() => { this.toggleSelectSquare(i);}}
+            onClick={() => { this.toggleSelectSquare(i); }}
         />;
     }
 }
@@ -156,25 +154,21 @@ interface SquareProps {
 type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
 class Square extends React.Component<SquareProps, {}> {
-    public getMarks(): (SquareValue | null)[] {
-        const lst: (SquareValue | null)[] = [];
-        for (let i = 0; i < 9; i++) {
-            lst[i] = this.props.markings.includes((i+1) as SquareValue) ? ((i+1) as SquareValue) : null;
-        }
-        return lst;
-    }
     public renderMarkings() {
-        const marks: (SquareValue | null)[] = this.getMarks();
+        const marks: Array<SquareValue | null> = [];
+        for (let i = 0; i < 9; i++) {
+            marks[i] = this.props.markings.includes((i + 1) as SquareValue) ? ((i + 1) as SquareValue) : null;
+        }
         const list = [];
         for (let i = 0; i < 9; i++) {
             list.push(<div className="mark">{marks[i]}</div>);
         }
         return list;
     }
+
     public render() {
         const light: string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
         const displayMarkings: boolean = // determine if markings or value should be displayed
-            this.props.markings &&
             this.props.markings.length != 0 &&
             !this.props.isPermanent &&
             !this.props.value;
