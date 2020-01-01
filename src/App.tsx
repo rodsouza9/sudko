@@ -17,7 +17,7 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <Board values={vals} />
+        <Board permanentValues={vals} />
       </header>
     </div>
   );
@@ -28,20 +28,18 @@ type SquareAddress = number;
 interface BoardState {
     highlights: SquareAddress[];
     contradicts: SquareAddress[];
-    permanentValues: SquareAddress[];
     values: Array<SquareValue | null>;
 }
 
 interface BoardProps {
-    values: Array<SquareValue | null>;
+    permanentValues: Array<SquareValue | null>;
 }
 
 class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
         highlights: [37],
         contradicts: [38],
-        permanentValues: [],
-        values: this.props.values,
+        values: [],
         /**
           * //TODO: CREATE marking state and transfer marking logic to board state.
           */
@@ -58,23 +56,20 @@ class Board extends React.Component<BoardProps, BoardState> {
         );
     }
 
-    public getPermanentValues(): SquareAddress[] {
-        const list = [];
-        for (let i = 0; i < 81; i++) {
-            if (this.props.values[i]) {
-                list.push(i as SquareAddress);
-            }
-        }
-        return list;
+
+
+    public isPermanent(i: SquareAddress): boolean {
+        return this.props.permanentValues[i] != null; //True if in permanentValues[i] != null
     }
 
     public normalMarkSelectedSquares(i: SquareValue) {
         for (let j = 0; j < this.state.highlights.length; j++) {
             const addy: SquareAddress = this.state.highlights[j];
-            if (!this.state.permanentValues.includes(addy)) {
+            if (!this.isPermanent(addy)) {
                 const newValues = JSON.parse(JSON.stringify(this.state.values));
                 newValues[addy] = i;
                 this.setState({
+                    ...this.state,
                     values: newValues,
                 });
             }
@@ -84,7 +79,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     public deleteSelectedSquares(): void {
         const newValues = JSON.parse(JSON.stringify(this.state.values));
         for (const address of this.state.highlights) {
-            if (!this.state.permanentValues.includes(address)) {
+            if (!this.isPermanent(address)) {
                 newValues[address] = null;
                 /**
                   * //TODO: if marking exist on first delete click
@@ -111,7 +106,6 @@ class Board extends React.Component<BoardProps, BoardState> {
     } */
 
     public render() {
-        this.state.permanentValues = this.getPermanentValues();
         return(
             <div className="game">
                 <div className="board">{this.renderSquares()}</div>
@@ -153,8 +147,8 @@ class Board extends React.Component<BoardProps, BoardState> {
         const isHighlighted = this.state.highlights.includes(i);
         const isContradicting = this.state.contradicts.includes(i);
         const marks = i % 9 + 1 == 7 ? [i % 1 as SquareValue, i % 5 + 1 as SquareValue, i % 3 + 1 as SquareValue, i % 8 + 1 as SquareValue] : [];
-        return <Square value={this.state.values[i]}
-        isPermanent={this.state.permanentValues.includes(i)} isHighlighted = {isHighlighted} isContradicting={isContradicting}
+        return <Square value={this.isPermanent(i) ? this.props.permanentValues[i] : this.state.values[i]}
+        isPermanent={this.isPermanent(i)} isHighlighted = {isHighlighted} isContradicting={isContradicting}
         markings={marks} onClick={() => { this.toggleSelectSquare(i); }}/>;
     }
 }
