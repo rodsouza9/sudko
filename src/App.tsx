@@ -63,19 +63,22 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public normalMarkSelectedSquares(i: SquareValue) {
+        const newValues = JSON.parse(JSON.stringify(this.state.values));
         for (let j = 0; j < this.state.highlights.length; j++) {
-            const addy: SquareAddress = this.state.highlights[j];
-            if (!this.isPermanent(addy)) {
-                const newValues = JSON.parse(JSON.stringify(this.state.values));
-                newValues[addy] = i;
-                this.setState({
-                    ...this.state,
-                    values: newValues,
-                });
+            const address: SquareAddress = this.state.highlights[j];
+            if (!this.isPermanent(address)) {
+                newValues[address] = i;
             }
         }
+        this.setState({
+            ...this.state,
+            values: newValues,
+        });
     }
 
+    /**
+      * onClick for DELETE button
+      */
     public deleteSelectedSquares(): void {
         const newValues = JSON.parse(JSON.stringify(this.state.values));
         for (const address of this.state.highlights) {
@@ -89,21 +92,10 @@ class Board extends React.Component<BoardProps, BoardState> {
             }
         }
         this.setState({
+            ...this.state,
             values: newValues,
         });
     }
-
-/*     convertUndefinedValues(): (SquareValue | null)[] {
-        let list = [];
-        for (var i = 0; i < 81; i++) {
-            if (this.props.values[i] == undefined) {
-                list.push(null);
-            } else {
-                list.push(this.props.values[i] as SquareValue);
-            }
-        }
-        return list;
-    } */
 
     public render() {
         return(
@@ -111,12 +103,7 @@ class Board extends React.Component<BoardProps, BoardState> {
                 <div className="board">{this.renderSquares()}</div>
                 <div className="button-box">
                     <div className="button-box-top">
-                        <div className="button-col">
-                            <NormalButton/>
-                            <CornerButton/>
-                            <UndoButton/>
-                            <RedoButton/>
-                        </div>
+                        <ControlButtons/>
                         <Numpad
                         onClickNum={(i: SquareValue) => {this.normalMarkSelectedSquares(i); }}
                         onClickDel={() => {this.deleteSelectedSquares(); }}
@@ -147,9 +134,14 @@ class Board extends React.Component<BoardProps, BoardState> {
         const isHighlighted = this.state.highlights.includes(i);
         const isContradicting = this.state.contradicts.includes(i);
         const marks = i % 9 + 1 == 7 ? [i % 1 as SquareValue, i % 5 + 1 as SquareValue, i % 3 + 1 as SquareValue, i % 8 + 1 as SquareValue] : [];
-        return <Square value={this.isPermanent(i) ? this.props.permanentValues[i] : this.state.values[i]}
-        isPermanent={this.isPermanent(i)} isHighlighted = {isHighlighted} isContradicting={isContradicting}
-        markings={marks} onClick={() => { this.toggleSelectSquare(i); }}/>;
+        return <Square
+            value={this.isPermanent(i) ? this.props.permanentValues[i] : this.state.values[i]}
+            isPermanent={this.isPermanent(i)}
+            isHighlighted = {isHighlighted}
+            isContradicting={isContradicting}
+            markings={marks}
+            onClick={() => { this.toggleSelectSquare(i);}}
+        />;
     }
 }
 
@@ -175,9 +167,11 @@ class Square extends React.Component<SquareProps, {}> {
     public render() {
         const light: string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
         const marks: boolean[] = this.getMarks();
-        const displayMarkings: (boolean | 0) = // determine if markings or value should be displayed
-            this.props.markings && this.props.markings.length &&
-            !this.props.isPermanent && !this.props.value;
+        const displayMarkings: boolean = // determine if markings or value should be displayed
+            this.props.markings &&
+            this.props.markings.length != 0 &&
+            !this.props.isPermanent &&
+            !this.props.value;
         if (displayMarkings) {
             return(
                 <div className={"square " + light} onClick={this.props.onClick}>
@@ -228,31 +222,15 @@ class Numpad extends React.Component<NumpadProps, {}> {
     }
 }
 
-class NormalButton extends React.Component<{}, {}> {
+class ControlButtons extends React.Component<{}, {}> {
     public render() {
-        return(
-            <Button className= "button" variant="contained">Normal</Button>
-        );
-    }
-}
-class CornerButton extends React.Component<{}, {}> {
-    public render() {
-        return(
-            <Button className= "button" variant="contained">Corner</Button>
-        );
-    }
-}
-class UndoButton extends React.Component<{}, {}> {
-    public render() {
-        return(
-            <Button className= "button" variant="contained">Undo</Button>
-        );
-    }
-}
-class RedoButton extends React.Component<{}, {}> {
-    public render() {
-        return(
-            <Button className= "button" variant="contained">Redo</Button>
+        return (
+            <div className="button-col">
+                <Button className= "button" variant="contained">Normal</Button>
+                <Button className= "button" variant="contained">Corner</Button>
+                <Button className= "button" variant="contained">Undo</Button>
+                <Button className= "button" variant="contained">Redo</Button>
+            </div>
         );
     }
 }
