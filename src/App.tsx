@@ -34,6 +34,7 @@ interface BoardState {
     contradicts: Set<SquareAddress>;
     values: Array<SquareValue | null>;
     markingMap: Map<SquareAddress, SquareValue[]>;
+    numpadMode: NumberMode;
 }
 
 interface BoardProps {
@@ -46,6 +47,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         highlights: new Set([37]),
         markingMap: new Map(),
         values: [],
+        numpadMode: "normal",
     };
 
     /**
@@ -55,6 +57,15 @@ class Board extends React.Component<BoardProps, BoardState> {
         this.setState({
                 ...this.state,
                 highlights: new Set([i]),
+            },
+        );
+    }
+
+    public toggleNumpadMode() {
+        const newMode : NumberMode = this.state.numpadMode == "normal" ? "corner" : "normal";
+        this.setState({
+                ...this.state,
+                numpadMode: newMode,
             },
         );
     }
@@ -130,13 +141,19 @@ class Board extends React.Component<BoardProps, BoardState> {
                 <div className="board">{this.renderSquares()}</div>
                 <div className="button-box">
                     <div className="button-box-top">
-                        <ControlButtons/>
+                        <ControlButtons
+                            onClickMode={() => {
+                                this.toggleNumpadMode();
+                            }}
+                            numpadMode={this.state.numpadMode}
+                        />
                         <Numpad
+                            numpadMode={this.state.numpadMode}
                             onClickCorner={(i: SquareValue) => {
                                 this.cornerMarkSelectedSquares(i);
                             }}
                             onClickNorm={(i: SquareValue) => {
-                                this.cornerMarkSelectedSquares(i);
+                                this.normalMarkSelectedSquares(i);
                             }}
                             onClickDel={() => {
                                 this.deleteSelectedSquares();
@@ -162,24 +179,6 @@ class Board extends React.Component<BoardProps, BoardState> {
             list.push(this.renderSquare(i));
         }
         return list;
-    }
-
-    public tempSetMarks(i: SquareAddress) {
-        const newMarkingMap = new Map(this.state.markingMap);
-        console.log(newMarkingMap);
-        if (i % 9 + 1 == 7) {
-            newMarkingMap.set( // only works like this  if I change this to newMarkingMap it doesn't exist
-                i as SquareAddress,
-                [   i % 1 as SquareValue,
-                    i % 5 + 1 as SquareValue,
-                    i % 3 + 1 as SquareValue,
-                    i % 8 + 1 as SquareValue] as SquareValue[]
-            );
-        }
-        this.setState({
-            ...this.state,
-            markingMap: newMarkingMap,
-        });
     }
 
     public renderSquare(i: SquareAddress) {
@@ -247,6 +246,7 @@ class Square extends React.Component<SquareProps, {}> {
 }
 
 interface NumpadProps {
+    numpadMode: NumberMode;
     onClickCorner: (i: SquareValue) => void;
     onClickDel: () => void;
     onClickNorm: (i: SquareValue) => void;
@@ -262,9 +262,25 @@ class Numpad extends React.Component<NumpadProps, {}> {
     }
 
     public renderNumButton(i: SquareValue) {
-        return <Button onClick={() => {
-            this.props.onClickNorm(i);
-        }} className="button-num" variant="contained">{i as number}</Button>;
+        if (this.props.numpadMode == "normal" as NumberMode) {
+            return <Button
+                onClick={() => {
+                    this.props.onClickNorm(i);
+                }}
+                className="button-num"
+                variant="contained">
+                    {i as number}
+            </Button>;
+        } else {
+            return <Button
+                onClick={() => {
+                    this.props.onClickCorner(i);
+                }}
+                className="button-num"
+                variant="contained">
+                {i as number}
+            </Button>;
+        }
     }
 
     public render() {
@@ -277,16 +293,32 @@ class Numpad extends React.Component<NumpadProps, {}> {
     }
 }
 
-class ControlButtons extends React.Component<{}, {}> {
+interface ControlProps {
+    numpadMode: NumberMode;
+    onClickMode: () => void;
+}
+
+class ControlButtons extends React.Component<ControlProps, {}> {
     public render() {
-        return (
-            <div className="button-col">
-                <Button className="button" variant="contained">Normal</Button>
-                <Button className="button" variant="contained">Corner</Button>
-                <Button className="button" variant="contained">Undo</Button>
-                <Button className="button" variant="contained">Redo</Button>
-            </div>
-        );
+        if (this.props.numpadMode == "normal" as NumberMode) {
+            return (
+                <div className="button-col">
+                    <Button className="button" color="primary" variant="contained">Normal</Button>
+                    <Button onClick={this.props.onClickMode} className="button" variant="contained">Corner</Button>
+                    <Button className="button" variant="contained">Undo</Button>
+                    <Button className="button" variant="contained">Redo</Button>
+                </div>
+            );
+        } else {
+            return (
+                <div className="button-col">
+                    <Button onClick={this.props.onClickMode} className="button" variant="contained">Normal</Button>
+                    <Button className="button" color="primary" variant="contained">Corner</Button>
+                    <Button className="button" variant="contained">Undo</Button>
+                    <Button className="button" variant="contained">Redo</Button>
+                </div>
+            );
+        }
     }
 }
 
