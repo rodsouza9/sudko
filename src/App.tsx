@@ -25,6 +25,10 @@ const App: React.FC = () => {
 
 type SquareAddress = number;
 
+type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
+
+type NumberMode = "normal" | "corner";
+
 interface BoardState {
     highlights: Set<SquareAddress>;
     contradicts: Set<SquareAddress>;
@@ -72,12 +76,32 @@ class Board extends React.Component<BoardProps, BoardState> {
         });
     }
 
+    public cornerMarkSelectedSquares(i: SquareValue) {
+        const newMarkingMap = new Map(this.state.markingMap);
+        for (const address of this.state.highlights) {
+            if (!this.isPermanent(address) && this.state.values[address] == null) {
+                const marks = newMarkingMap.has(address) ? newMarkingMap.get(address) as SquareValue[] : [];
+                if (marks.includes(i)) {
+                    const index = marks.indexOf(i);
+                    marks.splice(index, 1);
+                } else {
+                    marks.push(i);
+                }
+                newMarkingMap.set(address, marks);
+            }
+        }
+        this.setState({
+            ...this.state,
+            markingMap : newMarkingMap,
+        });
+    }
+
     /**
      * onClick for DELETE button
      */
     public deleteSelectedSquares(): void {
         const newValues = JSON.parse(JSON.stringify(this.state.values));
-        const newMarkingMap = JSON.parse(JSON.stringify(this.state.markingMap));
+        const newMarkingMap = new Map(this.state.markingMap);
         let deleteValues: boolean = false; // Determine weather to delete all values or delete all markings
         for (const address of this.state.highlights) {
             if (!this.isPermanent(address) && newValues[address] != null) {
@@ -108,8 +132,11 @@ class Board extends React.Component<BoardProps, BoardState> {
                     <div className="button-box-top">
                         <ControlButtons/>
                         <Numpad
-                            onClickNum={(i: SquareValue) => {
-                                this.normalMarkSelectedSquares(i);
+                            onClickCorner={(i: SquareValue) => {
+                                this.cornerMarkSelectedSquares(i);
+                            }}
+                            onClickNorm={(i: SquareValue) => {
+                                this.cornerMarkSelectedSquares(i);
                             }}
                             onClickDel={() => {
                                 this.deleteSelectedSquares();
@@ -138,10 +165,10 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public tempSetMarks(i: SquareAddress) {
-        const newMarkingMap : Map<SquareAddress, SquareValue[]> = JSON.parse(JSON.stringify(this.state.markingMap)) as Map<SquareAddress, SquareValue[]>;
+        const newMarkingMap = new Map(this.state.markingMap);
         console.log(newMarkingMap);
         if (i % 9 + 1 == 7) {
-            this.state.markingMap.set( // only works like this  if I change this to newMarkingMap it doesn't exist
+            newMarkingMap.set( // only works like this  if I change this to newMarkingMap it doesn't exist
                 i as SquareAddress,
                 [   i % 1 as SquareValue,
                     i % 5 + 1 as SquareValue,
@@ -158,13 +185,10 @@ class Board extends React.Component<BoardProps, BoardState> {
     public renderSquare(i: SquareAddress) {
         const isHighlighted = this.state.highlights.has(i);
         const isContradicting = this.state.contradicts.has(i);
-        console.log(this.state.markingMap);
-        console.log(this.state.markingMap.set);
-        this.tempSetMarks(i);
-        console.log(this.state.markingMap);
-        console.log("ro  "+this.state.markingMap.has);
-        const inc = this.state.markingMap.has(i); //says that this does not exist 
-        const marks = inc ? this.state.markingMap.get(i) as SquareValue[] : [];
+        //this.tempSetMarks(i);
+        console.log("MM: "+this.state.markingMap);
+        console.log("func: " + this.state.markingMap.has);
+        const marks = this.state.markingMap.has(i) ? this.state.markingMap.get(i) as SquareValue[] : [];
         //i % 9 + 1 == 7 ? [i % 1 as SquareValue, i % 5 + 1 as SquareValue, i % 3 + 1 as SquareValue, i % 8 + 1 as SquareValue] : [];
         return <Square
             value={this.isPermanent(i) ? this.props.permanentValues[i] : this.state.values[i]}
@@ -188,7 +212,6 @@ interface SquareProps {
     onClick: () => void;
 }
 
-type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
 class Square extends React.Component<SquareProps, {}> {
     public renderMarkings() {
@@ -224,8 +247,9 @@ class Square extends React.Component<SquareProps, {}> {
 }
 
 interface NumpadProps {
-    onClickNum: (i: SquareValue) => void;
+    onClickCorner: (i: SquareValue) => void;
     onClickDel: () => void;
+    onClickNorm: (i: SquareValue) => void;
 }
 
 class Numpad extends React.Component<NumpadProps, {}> {
@@ -239,7 +263,7 @@ class Numpad extends React.Component<NumpadProps, {}> {
 
     public renderNumButton(i: SquareValue) {
         return <Button onClick={() => {
-            this.props.onClickNum(i);
+            this.props.onClickNorm(i);
         }} className="button-num" variant="contained">{i as number}</Button>;
     }
 
