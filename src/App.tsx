@@ -2,6 +2,7 @@ import Button from "@material-ui/core/Button";
 import React from "react";
 import "./App.css";
 import logo from "./logo.svg";
+var _ = require('lodash');
 
 
 
@@ -60,7 +61,7 @@ interface BoardState {
     highlights: Set<SquareAddress>;
     contradicts: Set<SquareAddress>;
     values: Array<SquareValue | null>;
-    markingMap: Map<SquareAddress, SquareValue[]>;
+    markingMap: Map<SquareAddress, Set<SquareValue>>;
     numpadMode: NumberMode;
 }
 
@@ -82,20 +83,15 @@ class Board extends React.Component<BoardProps, BoardState> {
      * // TODO: other highlight functionality
      */
     public toggleSelectSquare(i: SquareAddress) {
-        this.setState({
-                ...this.state,
-                highlights: new Set([i]),
-            },
-        );
+        const newState = _.cloneDeep(this.state);
+        newState.highlights = new Set([i])
+        this.setState(newState);
     }
 
     public toggleNumpadMode() {
-        const newMode : NumberMode = this.state.numpadMode == "normal" ? "corner" : "normal";
-        this.setState({
-                ...this.state,
-                numpadMode: newMode,
-            },
-        );
+        const newState = _.cloneDeep(this.state);
+        newState.numpadMode = this.state.numpadMode == "normal" ? "corner" : "normal";
+        this.setState(newState);
     }
 
     public isPermanent(i: SquareAddress): boolean {
@@ -103,64 +99,54 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public normalMarkSelectedSquares(i: SquareValue) {
-        const newValues = JSON.parse(JSON.stringify(this.state.values));
+        const newState = _.cloneDeep(this.state);
         for (const address of this.state.highlights) {
             if (!this.isPermanent(address)) {
-                newValues[address] = i;
+                newState.values[address] = i;
             }
         }
-        this.setState({
-            ...this.state,
-            values: newValues,
-        });
+        this.setState(newState);
     }
 
     public cornerMarkSelectedSquares(i: SquareValue) {
-        const newMarkingMap = new Map(this.state.markingMap);
+        const newState = _.cloneDeep(this.state);
         for (const address of this.state.highlights) {
-            if (!this.isPermanent(address) && this.state.values[address] == null) {
-                const marks = newMarkingMap.has(address) ? newMarkingMap.get(address) as SquareValue[] : [];
-                if (marks.includes(i)) {
-                    const index = marks.indexOf(i);
-                    marks.splice(index, 1);
-                } else {
-                    marks.push(i);
-                }
-                newMarkingMap.set(address, marks);
+            if (this.isPermanent(address) || this.state.values[address] != null) {
+                continue;
             }
+            const marks = newState.markingMap.has(address) ? newState.markingMap.get(address) as Set<SquareValue> : new Set();
+            if (marks.has(i)) {
+                marks.delete(i);
+            } else {
+                marks.add(i);
+            }
+            newState.markingMap.set(address, marks);
         }
-        this.setState({
-            ...this.state,
-            markingMap : newMarkingMap,
-        });
+        this.setState(newState);
     }
 
     /**
      * onClick for DELETE button
      */
     public deleteSelectedSquares(): void {
-        const newValues = JSON.parse(JSON.stringify(this.state.values));
-        const newMarkingMap = new Map(this.state.markingMap);
+        const newState = _.cloneDeep(this.state);
         let deleteValues: boolean = false; // Determine weather to delete all values or delete all markings
         for (const address of this.state.highlights) {
-            if (!this.isPermanent(address) && newValues[address] != null) {
+            if (!this.isPermanent(address) && newState.values[address] != null) {
                 deleteValues = true;
             }
         }
         for (const address of this.state.highlights) {
-            if (!this.isPermanent(address)) {
-                if (deleteValues) {
-                    newValues[address] = null;
-                } else {
-                    newMarkingMap.set(address, []);
-                }
+            if (this.isPermanent(address)) {
+                continue
+            }
+            if (deleteValues) {
+                newState.values[address] = null;
+            } else {
+                newState.markingMap.set(address, new Set());
             }
         }
-        this.setState({
-            ...this.state,
-            values: newValues,
-            markingMap: newMarkingMap,
-        });
+        this.setState(newState);
     }
 
     public render() {
@@ -210,31 +196,15 @@ class Board extends React.Component<BoardProps, BoardState> {
             }
             list.push(<div className="group">{arr}</div>);
         }
-        /*
-        const list1 = [];
-        for (const address of this.props.groupings[0]) {
-            list1.push(this.renderSquare(address));
-        }
-        const list2 = [];
-        for (const address of this.props.groupings[1]) {
-            list2.push(this.renderSquare(address));
-        }
-        /!*for (let i = 0; i < 81; i++) {
-            list.push(this.renderSquare(i));
-        }*!/
-        list.push(<div className="group">{list1}</div>);
-        list.push(<div className="group">{list2}</div>);*/
         return list;
     }
 
     public renderSquare(i: SquareAddress) {
         const isHighlighted = this.state.highlights.has(i);
         const isContradicting = this.state.contradicts.has(i);
-        //this.tempSetMarks(i);
         console.log("MM: "+this.state.markingMap);
         console.log("func: " + this.state.markingMap.has);
-        const marks = this.state.markingMap.has(i) ? this.state.markingMap.get(i) as SquareValue[] : [];
-        //i % 9 + 1 == 7 ? [i % 1 as SquareValue, i % 5 + 1 as SquareValue, i % 3 + 1 as SquareValue, i % 8 + 1 as SquareValue] : [];
+        const marks = this.state.markingMap.has(i) ? this.state.markingMap.get(i) as Set<SquareValue> : new Set() as Set<SquareValue>;
         return <Square
             value={this.isPermanent(i) ? this.props.permanentValues[i] : this.state.values[i]}
             isPermanent={this.isPermanent(i)}
@@ -253,7 +223,7 @@ interface SquareProps {
     isHighlighted: boolean;
     isContradicting: boolean;
     value: SquareValue | null;
-    markings: SquareValue[];
+    markings: Set<SquareValue>;
     onClick: () => void;
 }
 
@@ -262,7 +232,7 @@ class Square extends React.Component<SquareProps, {}> {
     public renderMarkings() {
         const marks: Array<SquareValue | null> = [];
         for (let i = 0; i < 9; i++) {
-            marks[i] = this.props.markings.includes((i + 1) as SquareValue) ? ((i + 1) as SquareValue) : null;
+            marks[i] = this.props.markings.has((i + 1) as SquareValue) ? ((i + 1) as SquareValue) : null;
         }
         const list = [];
         for (let i = 0; i < 9; i++) {
@@ -274,20 +244,25 @@ class Square extends React.Component<SquareProps, {}> {
     public render() {
         const light: string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
         const displayMarkings: boolean = // determine if markings or value should be displayed
-            this.props.markings.length != 0 &&
+            this.props.markings.size != 0 &&
             !this.props.isPermanent &&
             !this.props.value;
-        if (displayMarkings) {
+        return (
+            <div className={"square " + light} onClick={this.props.onClick}>
+                {displayMarkings ? this.renderMarkings() : this.props.value}
+            </div>
+        );
+        /*if (displayMarkings) {
             return (
                 <div className={"square " + light} onClick={this.props.onClick}>
-                    {this.renderMarkings()}
+                    {displayMarkings ? this.renderMarkings() : this.props.value}
                 </div>
             );
         } else {
             return (
                 <div className={"square " + light} onClick={this.props.onClick}>{this.props.value}</div>
             );
-        }
+        }*/
     }
 }
 
@@ -308,25 +283,14 @@ class Numpad extends React.Component<NumpadProps, {}> {
     }
 
     public renderNumButton(i: SquareValue) {
-        if (this.props.numpadMode == "normal" as NumberMode) {
-            return <Button
-                onClick={() => {
-                    this.props.onClickNorm(i);
-                }}
-                className="button-num"
-                variant="contained">
-                    {i as number}
-            </Button>;
-        } else {
-            return <Button
-                onClick={() => {
-                    this.props.onClickCorner(i);
-                }}
-                className="button-num"
-                variant="contained">
+        return <Button
+            onClick={() => {
+                this.props.numpadMode == "normal" ? this.props.onClickNorm(i) : this.props.onClickCorner(i)
+            }}
+            className="button-num"
+            variant="contained">
                 {i as number}
-            </Button>;
-        }
+        </Button>;
     }
 
     public render() {
@@ -346,25 +310,26 @@ interface ControlProps {
 
 class ControlButtons extends React.Component<ControlProps, {}> {
     public render() {
-        if (this.props.numpadMode == "normal" as NumberMode) {
-            return (
-                <div className="button-col">
-                    <Button className="button" color="primary" variant="contained">Normal</Button>
-                    <Button onClick={this.props.onClickMode} className="button" variant="contained">Corner</Button>
-                    <Button className="button" variant="contained">Undo</Button>
-                    <Button className="button" variant="contained">Redo</Button>
-                </div>
-            );
-        } else {
-            return (
-                <div className="button-col">
-                    <Button onClick={this.props.onClickMode} className="button" variant="contained">Normal</Button>
-                    <Button className="button" color="primary" variant="contained">Corner</Button>
-                    <Button className="button" variant="contained">Undo</Button>
-                    <Button className="button" variant="contained">Redo</Button>
-                </div>
-            );
-        }
+        return (
+            <div className="button-col">
+                <Button
+                    onClick={this.props.numpadMode != "normal" ? this.props.onClickMode : () => {}}
+                    className="button"
+                    color={this.props.numpadMode != "normal" ? "default" : "primary"}
+                    variant="contained">
+                    Normal
+                </Button>
+                <Button
+                    onClick={this.props.numpadMode != "corner" ? this.props.onClickMode : () => {}}
+                    className="button"
+                    color={this.props.numpadMode != "corner" ? "default" : "primary"}
+                    variant="contained">
+                    Corner
+                </Button>
+                <Button className="button" variant="contained">Undo</Button>
+                <Button className="button" variant="contained">Redo</Button>
+            </div>
+        );
     }
 }
 
