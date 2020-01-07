@@ -1,31 +1,31 @@
 import Button from "@material-ui/core/Button";
 import React from "react";
 import "./App.css";
-var _ = require('lodash');
 
-
+// tslint:disable-next-line:no-var-requires
+const _ = require("lodash");
 
 const App: React.FC = () => {
     const vals =
-            [null, 3    , 1    , 6    , 7    , null , 4    , null , 9    ,
-            null , null , null , 8    , 3    , null , null , null , null ,
-            8    , 2    , null , null , null , null , null , 1    , null ,
-            null , 7    , 4    , null , null , 8    , 1    , 6    , null ,
-            null , 8    , null , null , 6    , null , null , null , 4    ,
-            9    , null , 2    , null , null , null , null , 7    , 3    ,
-            4    , 9    , null , null , 5    , 7    , 2    , 3    , null ,
-            2    , null , null , null , 9    , null , 5    , null , 7    ,
-            7    , null , 3    , 2    , null , null , 6    , null , 1] as Array<SquareValue | null>;
+        [null, 3, 1, 6, 7, null, 4, null, 9,
+            null, null, null, 8, 3, null, null, null, null,
+            8, 2, null, null, null, null, null, 1, null,
+            null, 7, 4, null, null, 8, 1, 6, null,
+            null, 8, null, null, 6, null, null, null, 4,
+            9, null, 2, null, null, null, null, 7, 3,
+            4, 9, null, null, 5, 7, 2, 3, null,
+            2, null, null, null, 9, null, 5, null, 7,
+            7, null, 3, 2, null, null, 6, null, 1] as Array<SquareValue | null>;
     const basicVals =
-            [0 ,1 ,2 ,3 ,4, 5, 6, 7, 8,
-            9 ,10 , 11 , 12    , 13    , 14 , 15 , 16 , 17 ,
-            18    ,19    , 20 , 21 , 22 , 23 , 24 , 25    , 26 ,
-            27 , 28    , 29    , 30 , 31 , 32    , 33    , 34    , 35 ,
-            36 , 37    , 38 , 39 , 40    , 41 , 42 , 43 , 44    ,
-            45    , 46 , 47    , 48 , 49 , 50 , 51 , 52    , 53    ,
-            54    , 55    , 56 , 57 , 58    , 59    , 60    , 61    , 62 ,
-            63    , 64 , 65 , 66 , 67    , 68 , 69    , 70 , 71    ,
-            72    , 73 , 74    , 75    , 76 , 77 , 78    , 79 , 80] as Array<SquareValue | null>;
+        [0, 1, 2, 3, 4, 5, 6, 7, 8,
+            9, 10, 11, 12, 13, 14, 15, 16, 17,
+            18, 19, 20, 21, 22, 23, 24, 25, 26,
+            27, 28, 29, 30, 31, 32, 33, 34, 35,
+            36, 37, 38, 39, 40, 41, 42, 43, 44,
+            45, 46, 47, 48, 49, 50, 51, 52, 53,
+            54, 55, 56, 57, 58, 59, 60, 61, 62,
+            63, 64, 65, 66, 67, 68, 69, 70, 71,
+            72, 73, 74, 75, 76, 77, 78, 79, 80] as Array<SquareValue | null>;
     const groups =
         [
             [0, 1, 2, 9, 10, 11, 18, 19, 20],
@@ -36,7 +36,7 @@ const App: React.FC = () => {
             [33, 34, 35, 42, 43, 44, 51, 52, 53],
             [54, 55, 56, 63, 64, 65, 72, 73, 74],
             [57, 58, 59, 66, 67, 68, 75, 76, 77],
-            [60, 61, 62, 69, 70, 71, 78, 79, 80]
+            [60, 61, 62, 69, 70, 71, 78, 79, 80],
         ];
     return (
         <div className="App">
@@ -66,7 +66,7 @@ interface BoardState {
 
 interface BoardProps {
     permanentValues: Array<SquareValue | null>;
-    groupings: Array<Array<SquareAddress>>;
+    groupings: SquareAddress[][];
 }
 
 class Board extends React.Component<BoardProps, BoardState> {
@@ -74,8 +74,8 @@ class Board extends React.Component<BoardProps, BoardState> {
         contradicts: new Set([38]),
         highlights: new Set([37]),
         markingMap: new Map(),
-        values: new Map(),
         numpadMode: "normal",
+        values: new Map(),
     };
 
     /**
@@ -89,7 +89,7 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public toggleNumpadMode() {
         const newState = _.cloneDeep(this.state);
-        newState.numpadMode = this.state.numpadMode == "normal" ? "corner" : "normal";
+        newState.numpadMode = this.state.numpadMode === "normal" ? "corner" : "normal";
         this.setState(newState);
     }
 
@@ -113,7 +113,9 @@ class Board extends React.Component<BoardProps, BoardState> {
             if (this.isPermanent(address) || this.state.values.has(address)) {
                 continue;
             }
-            const marks = newState.markingMap.has(address) ? newState.markingMap.get(address) as Set<SquareValue> : new Set();
+            const marks = newState.markingMap.has(address) ?
+                newState.markingMap.get(address) as Set<SquareValue> :
+                new Set();
             if (marks.has(i)) {
                 marks.delete(i);
             } else {
@@ -202,9 +204,9 @@ class Board extends React.Component<BoardProps, BoardState> {
     public renderSquare(i: SquareAddress) {
         const isHighlighted = this.state.highlights.has(i);
         const isContradicting = this.state.contradicts.has(i);
-        console.log("MM: "+this.state.markingMap);
-        console.log("func: " + this.state.markingMap.has);
-        const marks = this.state.markingMap.has(i) ? this.state.markingMap.get(i) as Set<SquareValue> : new Set() as Set<SquareValue>;
+        const marks = this.state.markingMap.has(i) ?
+            this.state.markingMap.get(i) as Set<SquareValue> :
+            new Set() as Set<SquareValue>;
         return <Square
             value={this.isPermanent(i) ? this.props.permanentValues[i] :
                 this.state.values.has(i) ? this.state.values.get(i) as SquareValue : null}
@@ -228,7 +230,6 @@ interface SquareProps {
     onClick: () => void;
 }
 
-
 class Square extends React.Component<SquareProps, {}> {
     public renderMarkings() {
         const marks: Array<SquareValue | null> = [];
@@ -245,7 +246,7 @@ class Square extends React.Component<SquareProps, {}> {
     public render() {
         const light: string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
         const displayMarkings: boolean = // determine if markings or value should be displayed
-            this.props.markings.size != 0 &&
+            this.props.markings.size !== 0 &&
             !this.props.isPermanent &&
             !this.props.value;
         return (
@@ -275,11 +276,11 @@ class Numpad extends React.Component<NumpadProps, {}> {
     public renderNumButton(i: SquareValue) {
         return <Button
             onClick={() => {
-                this.props.numpadMode == "normal" ? this.props.onClickNormal(i) : this.props.onClickCorner(i)
+                this.props.numpadMode === "normal" ? this.props.onClickNormal(i) : this.props.onClickCorner(i);
             }}
             className="button-num"
             variant="contained">
-                {i as number}
+            {i as number}
         </Button>;
     }
 
@@ -303,16 +304,16 @@ class ControlButtons extends React.Component<ControlProps, {}> {
         return (
             <div className="button-col">
                 <Button
-                    onClick={this.props.numpadMode != "normal" ? this.props.onClickMode : () => {}}
+                    onClick={this.props.numpadMode !== "normal" ? this.props.onClickMode : () => {}}
                     className="button"
-                    color={this.props.numpadMode != "normal" ? "default" : "primary"}
+                    color={this.props.numpadMode !== "normal" ? "default" : "primary"}
                     variant="contained">
                     Normal
                 </Button>
                 <Button
-                    onClick={this.props.numpadMode != "corner" ? this.props.onClickMode : () => {}}
+                    onClick={this.props.numpadMode !== "corner" ? this.props.onClickMode : () => {}}
                     className="button"
-                    color={this.props.numpadMode != "corner" ? "default" : "primary"}
+                    color={this.props.numpadMode !== "corner" ? "default" : "primary"}
                     variant="contained">
                     Corner
                 </Button>
