@@ -1,7 +1,6 @@
 import Button from "@material-ui/core/Button";
 import React from "react";
 import "./App.css";
-import logo from "./logo.svg";
 var _ = require('lodash');
 
 
@@ -60,7 +59,7 @@ type NumberMode = "normal" | "corner";
 interface BoardState {
     highlights: Set<SquareAddress>;
     contradicts: Set<SquareAddress>;
-    values: Array<SquareValue | null>;
+    values: Map<SquareAddress, SquareValue>;
     markingMap: Map<SquareAddress, Set<SquareValue>>;
     numpadMode: NumberMode;
 }
@@ -75,7 +74,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         contradicts: new Set([38]),
         highlights: new Set([37]),
         markingMap: new Map(),
-        values: [],
+        values: new Map(),
         numpadMode: "normal",
     };
 
@@ -84,7 +83,7 @@ class Board extends React.Component<BoardProps, BoardState> {
      */
     public toggleSelectSquare(i: SquareAddress) {
         const newState = _.cloneDeep(this.state);
-        newState.highlights = new Set([i])
+        newState.highlights = new Set([i]);
         this.setState(newState);
     }
 
@@ -102,7 +101,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         const newState = _.cloneDeep(this.state);
         for (const address of this.state.highlights) {
             if (!this.isPermanent(address)) {
-                newState.values[address] = i;
+                newState.values.set(address, i);
             }
         }
         this.setState(newState);
@@ -111,7 +110,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     public cornerMarkSelectedSquares(i: SquareValue) {
         const newState = _.cloneDeep(this.state);
         for (const address of this.state.highlights) {
-            if (this.isPermanent(address) || this.state.values[address] != null) {
+            if (this.isPermanent(address) || this.state.values.has(address)) {
                 continue;
             }
             const marks = newState.markingMap.has(address) ? newState.markingMap.get(address) as Set<SquareValue> : new Set();
@@ -132,16 +131,17 @@ class Board extends React.Component<BoardProps, BoardState> {
         const newState = _.cloneDeep(this.state);
         let deleteValues: boolean = false; // Determine weather to delete all values or delete all markings
         for (const address of this.state.highlights) {
-            if (!this.isPermanent(address) && newState.values[address] != null) {
+            if (!this.isPermanent(address) && newState.values.has(address)) {
                 deleteValues = true;
+                break;
             }
         }
         for (const address of this.state.highlights) {
             if (this.isPermanent(address)) {
-                continue
+                continue;
             }
             if (deleteValues) {
-                newState.values[address] = null;
+                newState.values.delete(address);
             } else {
                 newState.markingMap.set(address, new Set());
             }
@@ -166,7 +166,7 @@ class Board extends React.Component<BoardProps, BoardState> {
                             onClickCorner={(i: SquareValue) => {
                                 this.cornerMarkSelectedSquares(i);
                             }}
-                            onClickNorm={(i: SquareValue) => {
+                            onClickNormal={(i: SquareValue) => {
                                 this.normalMarkSelectedSquares(i);
                             }}
                             onClickDel={() => {
@@ -206,7 +206,8 @@ class Board extends React.Component<BoardProps, BoardState> {
         console.log("func: " + this.state.markingMap.has);
         const marks = this.state.markingMap.has(i) ? this.state.markingMap.get(i) as Set<SquareValue> : new Set() as Set<SquareValue>;
         return <Square
-            value={this.isPermanent(i) ? this.props.permanentValues[i] : this.state.values[i]}
+            value={this.isPermanent(i) ? this.props.permanentValues[i] :
+                this.state.values.has(i) ? this.state.values.get(i) as SquareValue : null}
             isPermanent={this.isPermanent(i)}
             isHighlighted={isHighlighted}
             isContradicting={isContradicting}
@@ -252,17 +253,6 @@ class Square extends React.Component<SquareProps, {}> {
                 {displayMarkings ? this.renderMarkings() : this.props.value}
             </div>
         );
-        /*if (displayMarkings) {
-            return (
-                <div className={"square " + light} onClick={this.props.onClick}>
-                    {displayMarkings ? this.renderMarkings() : this.props.value}
-                </div>
-            );
-        } else {
-            return (
-                <div className={"square " + light} onClick={this.props.onClick}>{this.props.value}</div>
-            );
-        }*/
     }
 }
 
@@ -270,7 +260,7 @@ interface NumpadProps {
     numpadMode: NumberMode;
     onClickCorner: (i: SquareValue) => void;
     onClickDel: () => void;
-    onClickNorm: (i: SquareValue) => void;
+    onClickNormal: (i: SquareValue) => void;
 }
 
 class Numpad extends React.Component<NumpadProps, {}> {
@@ -285,7 +275,7 @@ class Numpad extends React.Component<NumpadProps, {}> {
     public renderNumButton(i: SquareValue) {
         return <Button
             onClick={() => {
-                this.props.numpadMode == "normal" ? this.props.onClickNorm(i) : this.props.onClickCorner(i)
+                this.props.numpadMode == "normal" ? this.props.onClickNormal(i) : this.props.onClickCorner(i)
             }}
             className="button-num"
             variant="contained">
