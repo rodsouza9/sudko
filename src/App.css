@@ -1,48 +1,50 @@
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+    text-align: center;
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+    background-color: #282c34;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
 }
 
 .App-link {
-  color: #61dafb;
+    color: #61dafb;
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-.square {
-    width : 10.78%;
+/*.square {
+    width: 10.78%;
     height: 10.78%;
     border-style: solid;
     border-width: 1px;
     border-color: blue;
+    float: left;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}*/
+
+.square {
+    width: 32.32%;
+    height: 32.32%;
+    border-style: solid;
+    border-width: 1px;
+    border-color: royalblue ;
     float: left;
     display: flex;
     flex-wrap: wrap;
@@ -68,9 +70,19 @@
     flex-wrap: wrap;
 }
 
+.group {
+    width: 32.67%;
+    height: 32.67%;
+    border-style: solid;
+    border-width: 2px;
+    border-color: yellow;
+    display: flex;
+    flex-wrap: wrap;
+}
+
 .game {
     width: 1500px;
-    height: 600px;
+    height: 600px; /* uaw vh for scale*/
     border-style: solid;
     border-width: 1px;
     border-color: green;
@@ -88,7 +100,7 @@
     justify-content: center;
 }
 
-.button-box-top{
+.button-box-top {
     width: 60%;
     border-style: solid;
     border-width: 1px;
@@ -98,7 +110,7 @@
     justify-content: flex-start;
 }
 
-.button-col{
+.button-col {
     width: 30%;
     border-style: solid;
     border-width: 1px;
@@ -109,7 +121,7 @@
     align-items: center;
 }
 
-.button-num-pad{
+.button-num-pad {
     width: 60%;
     border-style: solid;
     border-width: 1px;
@@ -120,7 +132,7 @@
     align-items: center;
 }
 
-.button-box-bot{
+.button-box-bot {
     width: 60%;
     height: 7%;
     border-style: solid;
@@ -140,10 +152,10 @@
 }
 
 .highlight {
-    background-color : rgba(250,241,170,0.5);
+    background-color: rgba(250, 241, 170, 0.5);
 }
 
 .contradict {
-    background-color : red;
+    background-color: red;
 }
 
