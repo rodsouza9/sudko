@@ -1,5 +1,6 @@
 import Button from "@material-ui/core/Button";
-import React from "react";
+import {exec} from "child_process";
+import React, {KeyboardEvent} from "react";
 import "./App.css";
 
 // tslint:disable-next-line:no-var-requires
@@ -151,9 +152,22 @@ class Board extends React.Component<BoardProps, BoardState> {
         this.setState(newState);
     }
 
+    public handlePress = (e: KeyboardEvent) => {
+        let i = parseInt(e.key, 10);
+        console.log(i);
+        if (!isNaN(i) && i !== 0) {
+            console.log("i = " + i);
+            if (this.state.numpadMode === "normal") {
+                this.normalMarkSelectedSquares(i as SquareValue);
+            } else {
+                this.cornerMarkSelectedSquares(i as SquareValue);
+            }
+        }
+    }
+
     public render() {
         return (
-            <div className="game">
+            <div className="game" onKeyPress={this.handlePress} tabIndex={0}>
                 <div className="board">{this.renderSquares()}</div>
                 <div className="button-box">
                     <div className="button-box-top">
@@ -250,7 +264,10 @@ class Square extends React.Component<SquareProps, {}> {
             !this.props.isPermanent &&
             !this.props.value;
         return (
-            <div className={"square " + light} onClick={this.props.onClick}>
+            <div
+                className={"square " + light}
+                onClick={this.props.onClick}
+            >
                 {displayMarkings ? this.renderMarkings() : this.props.value}
             </div>
         );
