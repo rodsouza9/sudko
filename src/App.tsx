@@ -152,11 +152,22 @@ class Board extends React.Component<BoardProps, BoardState> {
         this.setState(newState);
     }
 
-    public handlePress = (e: KeyboardEvent) => {
-        let i = parseInt(e.key, 10);
-        console.log(i);
+    public handleKeyDown = (e: KeyboardEvent) => {
+        if (e.keyCode === 8) {
+            e.preventDefault();
+            this.deleteSelectedSquares();
+            return;
+        }
+        if (e.keyCode === 9) {
+            e.preventDefault();
+            this.toggleNumpadMode();
+            return;
+        }
+        console.log(e.keyCode);
+        const i = parseInt(e.key, 10);
+        // console.log(i);
         if (!isNaN(i) && i !== 0) {
-            console.log("i = " + i);
+            // console.log("i = " + i);
             if (this.state.numpadMode === "normal") {
                 this.normalMarkSelectedSquares(i as SquareValue);
             } else {
@@ -167,7 +178,8 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public render() {
         return (
-            <div className="game" onKeyPress={this.handlePress} tabIndex={0}>
+            <div className="game" /*onKeyDown={this.handleKeyDown} tabIndex={0}*/>
+                <KeyDownListener onKeyDown={this.handleKeyDown}/>
                 <div className="board">{this.renderSquares()}</div>
                 <div className="button-box">
                     <div className="button-box-top">
@@ -232,6 +244,27 @@ class Board extends React.Component<BoardProps, BoardState> {
                 this.toggleSelectSquare(i);
             }}
         />;
+    }
+}
+
+interface KeyDownListenerProps {
+    onKeyDown: (e: KeyboardEvent) => void;
+}
+class KeyDownListener extends React.Component<KeyDownListenerProps, {}> {
+    public componentDidMount() {
+        window.addEventListener("keydown",  (event) => {
+            this.props.onKeyDown(event as unknown as KeyboardEvent);
+        });
+    }
+
+    public componentWillUnmount() {
+        window.removeEventListener("keydown", (event) => {
+            this.props.onKeyDown(event as unknown as KeyboardEvent);
+        });
+    }
+
+    public render() {
+        return null;
     }
 }
 
