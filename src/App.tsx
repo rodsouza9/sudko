@@ -62,12 +62,13 @@ type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 type NumberMode = "normal" | "corner";
 
 interface BoardState {
-    highlights: Set<SquareAddress>;
+    continueHighlighting: boolean;
     contradicts: Set<SquareAddress>;
-    values: Map<SquareAddress, SquareValue>;
+    highlighting: boolean;
+    highlights: Set<SquareAddress>;
     markingMap: Map<SquareAddress, Set<SquareValue>>;
     numpadMode: NumberMode;
-    highlighting: boolean;
+    values: Map<SquareAddress, SquareValue>;
 }
 
 interface BoardProps {
@@ -77,6 +78,7 @@ interface BoardProps {
 
 class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
+        continueHighlighting: false,
         contradicts: new Set([38]),
         highlighting: false,
         highlights: new Set([37]),
@@ -179,14 +181,21 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public handleGlobalKeyDown = (e: KeyboardEvent) => {
-        if (e.keyCode === 8) {
+        if (e.keyCode === 8) { // Delete Key
             e.preventDefault();
             this.deleteSelectedSquares();
             return;
         }
-        if (e.keyCode === 9) {
+        if (e.keyCode === 9) { // Tab Key
             e.preventDefault();
             this.toggleNumpadMode();
+            return;
+        }
+        if (e.keyCode === 91) { // Command Key
+            e.preventDefault();
+            const newState = _.cloneDeep(this.state);
+            newState.continueHighlighting = true;
+            this.setState(newState);
             return;
         }
         console.log(e.keyCode);
@@ -202,8 +211,17 @@ class Board extends React.Component<BoardProps, BoardState> {
         }
     }
 
+    public handleGlobalKeyUp = (e: KeyboardEvent) => {
+        if (e.keyCode === 91) {
+            e.preventDefault();
+            const newState = _.cloneDeep(this.state);
+            newState.continueHighlighting = false;
+            this.setState(newState);
+        }
+    }
+
     public handleGlobalMouseDown = (e: MouseEvent) => {
-        if (!e.defaultPrevented) {
+        if (!e.defaultPrevented && !this.state.continueHighlighting) {
             e.preventDefault();
             this.unselectSquares();
         }
@@ -223,7 +241,11 @@ class Board extends React.Component<BoardProps, BoardState> {
         console.log("SquareMouseDown at SQaddy: " + i);
         const newState = _.cloneDeep(this.state);
         newState.highlighting = true;
-        newState.highlights = new Set([i]);
+        if (this.state.continueHighlighting) {
+            newState.highlights.add(i);
+        } else {
+            newState.highlights = new Set([i]);
+        }
         this.setState(newState);
     }
 
@@ -251,6 +273,7 @@ class Board extends React.Component<BoardProps, BoardState> {
                 className="screen"
                 ref={this.screenRef}
                 onKeyDown={this.handleGlobalKeyDown}
+                onKeyUp={this.handleGlobalKeyUp}
                 onMouseDown={(event) => {
                     this.handleGlobalMouseDown(event as unknown as MouseEvent);
                 }}
@@ -391,7 +414,9 @@ class Square extends React.Component<SquareProps, {}> {
                     }
                 }
             >
-                {displayMarkings ? this.renderMarkings() : this.props.value}
+                {displayMarkings ? this.renderMarkings() :
+                    this.props.isPermanent ? <b>{this.props.value}</b> : this.props.value
+                }
             </div>
         );
     }
