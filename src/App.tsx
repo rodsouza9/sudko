@@ -7,6 +7,7 @@ import "./App.css";
 const _ = require("lodash");
 
 const App: React.FC = () => {
+
     const vals =
         [null, 3, 1, 6, 7, null, 4, null, 9,
             null, null, null, 8, 3, null, null, null, null,
@@ -17,16 +18,7 @@ const App: React.FC = () => {
             4, 9, null, null, 5, 7, 2, 3, null,
             2, null, null, null, 9, null, 5, null, 7,
             7, null, 3, 2, null, null, 6, null, 1] as Array<SquareValue | null>;
-    const basicVals =
-        [0, 1, 2, 3, 4, 5, 6, 7, 8,
-            9, 10, 11, 12, 13, 14, 15, 16, 17,
-            18, 19, 20, 21, 22, 23, 24, 25, 26,
-            27, 28, 29, 30, 31, 32, 33, 34, 35,
-            36, 37, 38, 39, 40, 41, 42, 43, 44,
-            45, 46, 47, 48, 49, 50, 51, 52, 53,
-            54, 55, 56, 57, 58, 59, 60, 61, 62,
-            63, 64, 65, 66, 67, 68, 69, 70, 71,
-            72, 73, 74, 75, 76, 77, 78, 79, 80] as Array<SquareValue | null>;
+
     const groups =
         [
             [0, 1, 2, 9, 10, 11, 18, 19, 20],
@@ -39,6 +31,18 @@ const App: React.FC = () => {
             [57, 58, 59, 66, 67, 68, 75, 76, 77],
             [60, 61, 62, 69, 70, 71, 78, 79, 80],
         ];
+
+    const basicVals =
+        [0, 1, 2, 3, 4, 5, 6, 7, 8,
+            9, 10, 11, 12, 13, 14, 15, 16, 17,
+            18, 19, 20, 21, 22, 23, 24, 25, 26,
+            27, 28, 29, 30, 31, 32, 33, 34, 35,
+            36, 37, 38, 39, 40, 41, 42, 43, 44,
+            45, 46, 47, 48, 49, 50, 51, 52, 53,
+            54, 55, 56, 57, 58, 59, 60, 61, 62,
+            63, 64, 65, 66, 67, 68, 69, 70, 71,
+            72, 73, 74, 75, 76, 77, 78, 79, 80] as Array<SquareValue | null>;
+
     return (
         <div className="App">
             <header className="App-header">
@@ -178,6 +182,12 @@ class Board extends React.Component<BoardProps, BoardState> {
         }
     }
 
+    public handleGlobalMouseDown = (e: MouseEvent) => {
+        if (!e.defaultPrevented) {
+            console.log("Globally clicked");
+        }
+    }
+
     public handleSquareMouseDown = (i: SquareAddress) => (e: MouseEvent) => {
         e.preventDefault();
         console.log("SquareMouseDown at SQaddy: " + i);
@@ -207,39 +217,40 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public render() {
         return (
-            <div className="game" /*onKeyDown={this.handleKeyDown} tabIndex={0}*/>
-                <KeyDownListener
-                    onKeyDown={this.handleGlobalKeyDown}
-                />
-                <div className="board">{this.renderSquares()}</div>
-                <div className="button-box">
-                    <div className="button-box-top">
-                        <ControlButtons
-                            onClickMode={() => {
-                                this.toggleNumpadMode();
-                            }}
-                            numpadMode={this.state.numpadMode}
-                        />
-                        <Numpad
-                            numpadMode={this.state.numpadMode}
-                            onClickCorner={(i: SquareValue) => {
-                                this.cornerMarkSelectedSquares(i);
-                            }}
-                            onClickNormal={(i: SquareValue) => {
-                                this.normalMarkSelectedSquares(i);
-                            }}
-                            onClickDel={() => {
-                                this.deleteSelectedSquares();
-                            }}
-                        />
-                    </div>
-                    <div className="button-box-bot">
-                        <Button variant="contained" color="primary">
-                            R E S T A R T
-                        </Button>
-                        <Button variant="contained" color="secondary">
-                            C H E C K
-                        </Button>
+            <div className="screen">
+                <div className="game" /*onKeyDown={this.handleKeyDown} tabIndex={0}*/>
+                    <KeyDownListener
+                        onKeyDown={this.handleGlobalKeyDown}
+                        onMouseDown={this.handleGlobalMouseDown}
+                    />
+                    <div className="board">{this.renderSquares()}</div>
+                    <div className="button-box">
+                        <div className="button-box-top">
+                            <ControlButtons
+                                onClickMode={this.toggleNumpadMode.bind(this)}
+                                numpadMode={this.state.numpadMode}
+                            />
+                            <Numpad
+                                numpadMode={this.state.numpadMode}
+                                onClickCorner={(i: SquareValue) => {
+                                    this.cornerMarkSelectedSquares(i);
+                                }}
+                                onClickNormal={(i: SquareValue) => {
+                                    this.normalMarkSelectedSquares(i);
+                                }}
+                                onClickDel={() => {
+                                    this.deleteSelectedSquares();
+                                }}
+                            />
+                        </div>
+                        <div className="button-box-bot">
+                            <Button variant="contained" color="primary">
+                                R E S T A R T
+                            </Button>
+                            <Button variant="contained" color="secondary">
+                                C H E C K
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -283,12 +294,16 @@ class Board extends React.Component<BoardProps, BoardState> {
 
 interface KeyDownListenerProps {
     onKeyDown: (e: KeyboardEvent) => void;
+    onMouseDown: (e: MouseEvent) => void;
 }
 
 class KeyDownListener extends React.Component<KeyDownListenerProps, {}> {
     public componentDidMount() {
         window.addEventListener("keydown", (event) => {
             this.props.onKeyDown(event as unknown as KeyboardEvent);
+        });
+        window.addEventListener("mousedown", (event) => {
+            this.props.onMouseDown(event as unknown as MouseEvent);
         });
     }
 
@@ -377,7 +392,7 @@ class Numpad extends React.Component<NumpadProps, {}> {
 
     public renderNumButton(i: SquareValue) {
         return <Button
-            onClick={() => {
+            onClick={(e) => {
                 this.props.numpadMode === "normal" ? this.props.onClickNormal(i) : this.props.onClickCorner(i);
             }}
             className="button-num"
@@ -406,7 +421,15 @@ class ControlButtons extends React.Component<ControlProps, {}> {
         return (
             <div className="button-col">
                 <Button
-                    onClick={this.props.numpadMode !== "normal" ? this.props.onClickMode : () => {}}
+                    onClick={this.props.numpadMode !== "normal" ?
+                        (event) => {
+                            event.preventDefault();
+                            this.props.onClickMode();
+                        } :
+                        (event) => {
+                            event.preventDefault();
+                        }
+                    }
                     className="button"
                     color={this.props.numpadMode !== "normal" ? "default" : "primary"}
                     variant="contained">
