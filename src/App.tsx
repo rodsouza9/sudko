@@ -1,5 +1,4 @@
 import Button from "@material-ui/core/Button";
-import {exec} from "child_process";
 import React, {KeyboardEvent, RefObject} from "react";
 import "./App.css";
 
@@ -100,15 +99,6 @@ class Board extends React.Component<BoardProps, BoardState> {
         }
     }
 
-    /**
-     * // TODO: other highlight functionality
-     */
-    public toggleSelectSquare(i: SquareAddress) {
-        const newState = _.cloneDeep(this.state);
-        newState.highlights = new Set([i]);
-        this.setState(newState);
-    }
-
     public toggleNumpadMode() {
         const newState = _.cloneDeep(this.state);
         newState.numpadMode = this.state.numpadMode === "normal" ? "corner" : "normal";
@@ -173,7 +163,10 @@ class Board extends React.Component<BoardProps, BoardState> {
         this.setState(newState);
     }
 
-    public unselectSquares(): void {
+    /**
+     * deselect / unhighlight all highlighted squares
+     */
+    public deselectSquares(): void {
         const newState = _.cloneDeep(this.state);
         newState.highlighting = false;
         newState.highlights = new Set<SquareAddress>();
@@ -198,11 +191,8 @@ class Board extends React.Component<BoardProps, BoardState> {
             this.setState(newState);
             return;
         }
-        console.log(e.keyCode);
         const i = parseInt(e.key, 10);
-        // console.log(i);
         if (!isNaN(i) && i !== 0) {
-            // console.log("i = " + i);
             if (this.state.numpadMode === "normal") {
                 this.normalMarkSelectedSquares(i as SquareValue);
             } else {
@@ -223,7 +213,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     public handleGlobalMouseDown = (e: MouseEvent) => {
         if (!e.defaultPrevented && !this.state.continueHighlighting) {
             e.preventDefault();
-            this.unselectSquares();
+            this.deselectSquares();
         }
     }
 
@@ -238,7 +228,6 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public handleSquareMouseDown = (i: SquareAddress) => (e: MouseEvent) => {
         e.preventDefault();
-        console.log("SquareMouseDown at SQaddy: " + i);
         const newState = _.cloneDeep(this.state);
         newState.highlighting = true;
         if (this.state.continueHighlighting) {
@@ -252,7 +241,6 @@ class Board extends React.Component<BoardProps, BoardState> {
     public handleSquareMouseOver = (i: SquareAddress) => (e: MouseEvent) => {
         e.preventDefault();
         if (this.state.highlighting) {
-            console.log("SquareMouseOver at addy: " + i);
             const newState = _.cloneDeep(this.state);
             newState.highlights.add(i);
             this.setState(newState);
@@ -261,7 +249,6 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public handleSquareMouseUp = (i: SquareAddress) => (e: MouseEvent) => {
         e.preventDefault();
-        console.log("SquareMouseDown at SQaddy: " + i);
         const newState = _.cloneDeep(this.state);
         newState.highlighting = false;
         this.setState(newState);
@@ -281,11 +268,7 @@ class Board extends React.Component<BoardProps, BoardState> {
                     this.handleGlobalMouseUp(event as unknown as MouseEvent);
                 }}
                 tabIndex={0}>
-                <div className="game" /*onKeyDown={this.handleKeyDown} tabIndex={0}*/>
-                    {/*<KeyDownListener
-                        onKeyDown={this.handleGlobalKeyDown}
-                        onMouseDown={this.handleGlobalMouseDown}
-                    />*/}
+                <div className="game">
                     <div className="board">{this.renderSquares()}</div>
                     <div className="button-box">
                         <div className="button-box-top">
@@ -310,15 +293,23 @@ class Board extends React.Component<BoardProps, BoardState> {
                         </div>
                         <div className="button-box-bot">
                             <Button
-                                onMouseDown={(event) => {event.preventDefault(); }}
-                                onMouseUp={(event) => {event.preventDefault(); }}
+                                onMouseDown={(event) => {
+                                    event.preventDefault();
+                                }}
+                                onMouseUp={(event) => {
+                                    event.preventDefault();
+                                }}
                                 variant="contained"
                                 color="primary">
                                 R E S T A R T
                             </Button>
                             <Button
-                                onMouseDown={(event) => {event.preventDefault(); }}
-                                onMouseUp={(event) => {event.preventDefault(); }}
+                                onMouseDown={(event) => {
+                                    event.preventDefault();
+                                }}
+                                onMouseUp={(event) => {
+                                    event.preventDefault();
+                                }}
                                 variant="contained"
                                 color="secondary">
                                 C H E C K
@@ -355,9 +346,6 @@ class Board extends React.Component<BoardProps, BoardState> {
             isHighlighted={isHighlighted}
             isContradicting={isContradicting}
             markings={marks}
-            /*onClick={() => {
-                this.toggleSelectSquare(i);
-            }}*/
             onMouseDown={this.handleSquareMouseDown(i)}
             onMouseOver={this.handleSquareMouseOver(i)}
             onMouseUp={this.handleSquareMouseUp(i)}
@@ -443,8 +431,12 @@ class Numpad extends React.Component<NumpadProps, {}> {
             onClick={(e) => {
                 this.props.numpadMode === "normal" ? this.props.onClickNormal(i) : this.props.onClickCorner(i);
             }}
-            onMouseDown={(event) => {event.preventDefault(); }}
-            onMouseUp={(event) => {event.preventDefault(); }}
+            onMouseDown={(event) => {
+                event.preventDefault();
+            }}
+            onMouseUp={(event) => {
+                event.preventDefault();
+            }}
             className="button-num"
             variant="contained">
             {i as number}
@@ -457,8 +449,12 @@ class Numpad extends React.Component<NumpadProps, {}> {
                 {this.renderNumButtons()}
                 <Button
                     onClick={this.props.onClickDel}
-                    onMouseDown={(event) => {event.preventDefault(); }}
-                    onMouseUp={(event) => {event.preventDefault(); }}
+                    onMouseDown={(event) => {
+                        event.preventDefault();
+                    }}
+                    onMouseUp={(event) => {
+                        event.preventDefault();
+                    }}
                     className="button" variant="contained">DELETE</Button>
             </div>
         );
@@ -475,18 +471,28 @@ class ControlButtons extends React.Component<ControlProps, {}> {
         return (
             <div className="button-col">
                 <Button
-                    onClick={this.props.numpadMode !== "normal" ? this.props.onClickMode : () => {}}
-                    onMouseDown={(event) => {event.preventDefault(); }}
-                    onMouseUp={(event) => {event.preventDefault(); }}
+                    onClick={this.props.numpadMode !== "normal" ? this.props.onClickMode : () => {
+                    }}
+                    onMouseDown={(event) => {
+                        event.preventDefault();
+                    }}
+                    onMouseUp={(event) => {
+                        event.preventDefault();
+                    }}
                     className="button"
                     color={this.props.numpadMode !== "normal" ? "default" : "primary"}
                     variant="contained">
                     Normal
                 </Button>
                 <Button
-                    onClick={this.props.numpadMode !== "corner" ? this.props.onClickMode : () => {}}
-                    onMouseDown={(event) => {event.preventDefault(); }}
-                    onMouseUp={(event) => {event.preventDefault(); }}
+                    onClick={this.props.numpadMode !== "corner" ? this.props.onClickMode : () => {
+                    }}
+                    onMouseDown={(event) => {
+                        event.preventDefault();
+                    }}
+                    onMouseUp={(event) => {
+                        event.preventDefault();
+                    }}
                     className="button"
                     color={this.props.numpadMode !== "corner" ? "default" : "primary"}
                     variant="contained">
@@ -494,15 +500,23 @@ class ControlButtons extends React.Component<ControlProps, {}> {
                 </Button>
                 <Button
                     className="button"
-                    onMouseDown={(event) => {event.preventDefault(); }}
-                    onMouseUp={(event) => {event.preventDefault(); }}
+                    onMouseDown={(event) => {
+                        event.preventDefault();
+                    }}
+                    onMouseUp={(event) => {
+                        event.preventDefault();
+                    }}
                     variant="contained">
                     Undo
                 </Button>
                 <Button
                     className="button"
-                    onMouseDown={(event) => {event.preventDefault(); }}
-                    onMouseUp={(event) => {event.preventDefault(); }}
+                    onMouseDown={(event) => {
+                        event.preventDefault();
+                    }}
+                    onMouseUp={(event) => {
+                        event.preventDefault();
+                    }}
                     variant="contained">
                     Redo
                 </Button>
