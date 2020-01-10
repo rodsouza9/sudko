@@ -33,7 +33,7 @@ const App: React.FC = () => {
             [3, 4, 5, 12, 13, 14, 21, 22, 23],
             [6, 7, 8, 15, 16, 17, 24, 25, 26],
             [27, 28, 29, 36, 37, 38, 45, 46, 47],
-            [30, 31, 32, 39, 40, 41, 48, 49, 60],
+            [30, 31, 32, 39, 40, 41, 48, 49, 50],
             [33, 34, 35, 42, 43, 44, 51, 52, 53],
             [54, 55, 56, 63, 64, 65, 72, 73, 74],
             [57, 58, 59, 66, 67, 68, 75, 76, 77],
@@ -63,6 +63,7 @@ interface BoardState {
     values: Map<SquareAddress, SquareValue>;
     markingMap: Map<SquareAddress, Set<SquareValue>>;
     numpadMode: NumberMode;
+    highlighting: boolean;
 }
 
 interface BoardProps {
@@ -73,6 +74,7 @@ interface BoardProps {
 class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
         contradicts: new Set([38]),
+        highlighting: false,
         highlights: new Set([37]),
         markingMap: new Map(),
         numpadMode: "normal",
@@ -152,7 +154,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         this.setState(newState);
     }
 
-    public handleKeyDown = (e: KeyboardEvent) => {
+    public handleGlobalKeyDown = (e: KeyboardEvent) => {
         if (e.keyCode === 8) {
             e.preventDefault();
             this.deleteSelectedSquares();
@@ -176,10 +178,39 @@ class Board extends React.Component<BoardProps, BoardState> {
         }
     }
 
+    public handleSquareMouseDown = (i: SquareAddress) => (e: MouseEvent) => {
+        e.preventDefault();
+        console.log("SquareMouseDown at SQaddy: " + i);
+        const newState = _.cloneDeep(this.state);
+        newState.highlighting = true;
+        newState.highlights = new Set([i]);
+        this.setState(newState);
+    }
+
+    public handleSquareMouseOver = (i: SquareAddress) => (e: MouseEvent) => {
+        e.preventDefault();
+        if (this.state.highlighting) {
+            console.log("SquareMouseOver at addy: " + i);
+            const newState = _.cloneDeep(this.state);
+            newState.highlights.add(i);
+            this.setState(newState);
+        }
+    }
+
+    public handleSquareMouseUp = (i: SquareAddress) => (e: MouseEvent) => {
+        e.preventDefault();
+        console.log("SquareMouseDown at SQaddy: " + i);
+        const newState = _.cloneDeep(this.state);
+        newState.highlighting = false;
+        this.setState(newState);
+    }
+
     public render() {
         return (
             <div className="game" /*onKeyDown={this.handleKeyDown} tabIndex={0}*/>
-                <KeyDownListener onKeyDown={this.handleKeyDown}/>
+                <KeyDownListener
+                    onKeyDown={this.handleGlobalKeyDown}
+                />
                 <div className="board">{this.renderSquares()}</div>
                 <div className="button-box">
                     <div className="button-box-top">
@@ -240,9 +271,12 @@ class Board extends React.Component<BoardProps, BoardState> {
             isHighlighted={isHighlighted}
             isContradicting={isContradicting}
             markings={marks}
-            onClick={() => {
+            /*onClick={() => {
                 this.toggleSelectSquare(i);
-            }}
+            }}*/
+            onMouseDown={this.handleSquareMouseDown(i)}
+            onMouseOver={this.handleSquareMouseOver(i)}
+            onMouseUp={this.handleSquareMouseUp(i)}
         />;
     }
 }
@@ -250,9 +284,10 @@ class Board extends React.Component<BoardProps, BoardState> {
 interface KeyDownListenerProps {
     onKeyDown: (e: KeyboardEvent) => void;
 }
+
 class KeyDownListener extends React.Component<KeyDownListenerProps, {}> {
     public componentDidMount() {
-        window.addEventListener("keydown",  (event) => {
+        window.addEventListener("keydown", (event) => {
             this.props.onKeyDown(event as unknown as KeyboardEvent);
         });
     }
@@ -274,7 +309,9 @@ interface SquareProps {
     isContradicting: boolean;
     value: SquareValue | null;
     markings: Set<SquareValue>;
-    onClick: () => void;
+    onMouseDown: (e: MouseEvent) => void;
+    onMouseOver: (e: MouseEvent) => void;
+    onMouseUp: (e: MouseEvent) => void;
 }
 
 class Square extends React.Component<SquareProps, {}> {
@@ -299,7 +336,22 @@ class Square extends React.Component<SquareProps, {}> {
         return (
             <div
                 className={"square " + light}
-                onClick={this.props.onClick}
+                //onClick={this.props.onClick}
+                onMouseDown={
+                    (event) => {
+                        this.props.onMouseDown(event as unknown as MouseEvent);
+                    }
+                }
+                onMouseEnter={
+                    (event) => {
+                        this.props.onMouseOver(event as unknown as MouseEvent);
+                    }
+                }
+                onMouseUp={
+                    (event) => {
+                        this.props.onMouseUp(event as unknown as MouseEvent);
+                    }
+                }
             >
                 {displayMarkings ? this.renderMarkings() : this.props.value}
             </div>
