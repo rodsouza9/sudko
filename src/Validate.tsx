@@ -80,3 +80,10 @@ function normalGroupCheck(values: Values, grouping: Groupings): Contradictions {
     }
     return contradictions;
 }
+
+function normalCheck(values: Values, grouping: Groupings): Contradictions {
+    const rowCheck = normalRowCheck(values);
+    const colCheck = normalColumnCheck(values);
+    const groupCheck = normalGroupCheck(values, grouping);
+    return _.union(rowCheck, colCheck, groupCheck);
+}
