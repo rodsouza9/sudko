@@ -60,11 +60,15 @@ const App: React.FC = () => {
     );
 };
 
-type SquareAddress = number;
+export type SquareAddress = number;
 
-type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
+export type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
-type NumberMode = "normal" | "corner";
+export type NumberMode = "normal" | "corner";
+
+export type Values = Map<SquareAddress, SquareValue>;
+
+export type Groupings = SquareAddress[][];
 
 /**
  * @interface shape of Board.state
@@ -97,12 +101,12 @@ interface BoardState {
     mouseOverHighlighting: boolean;
     multiStrokeHighlighting: boolean;
     numpadMode: NumberMode;
-    values: Map<SquareAddress, SquareValue>;
+    values: Values;
 }
 
 interface BoardProps {
     permanentValues: Array<SquareValue | null>;
-    groupings: SquareAddress[][];
+    groupings: Groupings;
 }
 
 class Board extends React.Component<BoardProps, BoardState> {
