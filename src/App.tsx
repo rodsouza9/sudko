@@ -5,6 +5,12 @@ import "./App.css";
 // tslint:disable-next-line:no-var-requires
 const _ = require("lodash");
 
+const KEY_DELETE = 8;
+const KEY_TAB = 9;
+const KEY_COMMAND = 91;
+const KEY_1 = 49;
+const KEY_9 = 57;
+
 const App: React.FC = () => {
 
     const vals =
@@ -60,6 +66,30 @@ type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
 type NumberMode = "normal" | "corner";
 
+/**
+ * @interface shape of Board.state
+ *
+ * @property {boolean} continueHighlighting
+ *      True when Command Key is pressed.
+ * @property {Set<SquareAddress>} contradicts
+ *      Updated when check buttons is clicked. All seemingly incorrect squares
+ *      are added to Board.state.contradicts and are colored accordingly.
+ * @property {boolean} highlighting
+ *      True when mouse is held down over Square components. Determines whether
+ *      to add Squares hovered over to Board.state.highlights.
+ * @property {Set<SquareAddress>} highlights
+ *      Set of currently selected Square components, are all colored accordingly.
+ * @property {Map<SquareAddress, Set<SquareValue>>} markingMap
+ *      A mapping of each Square Component's SquareAddress to its corresponding
+ *      Set of markings. The contents of the Set of markings are accordingly
+ *      rendered in the correct positions.
+ * @property {NumberMode} numpadMode
+ *      Can either be in "normal" or "corner" mode. Determines whether the numpad
+ *      buttons add a marking or a value to the Square Component.
+ * @property {Map<SquareAddress, SquareValue>} values
+ *      A mapping of each Square Component's SquareAddress to its corresponding
+ *      value.
+ */
 interface BoardState {
     continueHighlighting: boolean;
     contradicts: Set<SquareAddress>;
@@ -164,7 +194,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     /**
-     * deselect / unhighlight all highlighted squares
+     * Deselect / unhighlight all highlighted squares.
      */
     public deselectSquares(): void {
         const newState = _.cloneDeep(this.state);
@@ -174,25 +204,26 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public handleGlobalKeyDown = (e: KeyboardEvent) => {
-        if (e.keyCode === 8) { // Delete Key
+        if (e.keyCode === KEY_DELETE) {
             e.preventDefault();
             this.deleteSelectedSquares();
             return;
         }
-        if (e.keyCode === 9) { // Tab Key
+        if (e.keyCode === KEY_TAB) {
             e.preventDefault();
             this.toggleNumpadMode();
             return;
         }
-        if (e.keyCode === 91) { // Command Key
+        if (e.keyCode === KEY_COMMAND) { // Command Key
             e.preventDefault();
             const newState = _.cloneDeep(this.state);
             newState.continueHighlighting = true;
             this.setState(newState);
             return;
         }
-        const i = parseInt(e.key, 10);
-        if (!isNaN(i) && i !== 0) {
+        const i = e.keyCode >= KEY_1 && e.keyCode <= KEY_9 ?
+            e.keyCode - KEY_1 + 1 : NaN;
+        if (!isNaN(i)) {
             if (this.state.numpadMode === "normal") {
                 this.normalMarkSelectedSquares(i as SquareValue);
             } else {
@@ -202,8 +233,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public handleGlobalKeyUp = (e: KeyboardEvent) => {
-        if (e.keyCode === 91) {
-            e.preventDefault();
+        if (e.keyCode === KEY_COMMAND) {s
             const newState = _.cloneDeep(this.state);
             newState.continueHighlighting = false;
             this.setState(newState);
@@ -259,8 +289,8 @@ class Board extends React.Component<BoardProps, BoardState> {
             <div
                 className="screen"
                 ref={this.screenRef}
-                onKeyDown={this.handleGlobalKeyDown}
-                onKeyUp={this.handleGlobalKeyUp}
+                onKeyDown={this.handleGlobalKeyDown.bind(this)}
+                onKeyUp={this.handleGlobalKeyUp.bind(this)}
                 onMouseDown={(event) => {
                     this.handleGlobalMouseDown(event as unknown as MouseEvent);
                 }}
