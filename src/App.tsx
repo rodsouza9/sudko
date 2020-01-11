@@ -198,7 +198,7 @@ class Board extends React.Component<BoardProps, BoardState> {
      */
     public deselectSquares(): void {
         const newState = _.cloneDeep(this.state);
-        newState.highlighting = false;
+        newState.mouseOverHighlighting = false;
         newState.highlights = new Set<SquareAddress>();
         this.setState(newState);
     }
@@ -217,7 +217,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         if (e.keyCode === KEY_COMMAND) { // Command Key
             e.preventDefault();
             const newState = _.cloneDeep(this.state);
-            newState.continueHighlighting = true;
+            newState.multiStrokeHighlighting = true;
             this.setState(newState);
             return;
         }
@@ -235,7 +235,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     public handleGlobalKeyUp = (e: KeyboardEvent) => {
         if (e.keyCode === KEY_COMMAND) {
             const newState = _.cloneDeep(this.state);
-            newState.continueHighlighting = false;
+            newState.multiStrokeHighlighting = false;
             this.setState(newState);
         }
     }
@@ -251,7 +251,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         if (!e.defaultPrevented) {
             e.preventDefault();
             const newState = _.cloneDeep(this.state);
-            newState.highlighting = false;
+            newState.mouseOverHighlighting = false;
             this.setState(newState);
         }
     }
@@ -259,7 +259,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     public handleSquareMouseDown = (i: SquareAddress) => (e: MouseEvent) => {
         e.preventDefault();
         const newState = _.cloneDeep(this.state);
-        newState.highlighting = true;
+        newState.mouseOverHighlighting = true;
         if (this.state.multiStrokeHighlighting) {
             newState.highlights.add(i);
         } else {
@@ -280,7 +280,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     public handleSquareMouseUp = (i: SquareAddress) => (e: MouseEvent) => {
         e.preventDefault();
         const newState = _.cloneDeep(this.state);
-        newState.highlighting = false;
+        newState.mouseOverHighlighting = false;
         this.setState(newState);
     }
 
