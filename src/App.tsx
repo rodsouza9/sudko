@@ -1,12 +1,18 @@
-import Button from "@material-ui/core/Button";
-import {exec} from "child_process";
-import React, {KeyboardEvent} from "react";
+import Button, {ButtonProps} from "@material-ui/core/Button";
+import React, {KeyboardEvent, RefObject, SyntheticEvent} from "react";
 import "./App.css";
 
 // tslint:disable-next-line:no-var-requires
 const _ = require("lodash");
 
+const KEY_DELETE = 8;
+const KEY_TAB = 9;
+const KEY_COMMAND = 91;
+const KEY_1 = 49;
+const KEY_9 = 57;
+
 const App: React.FC = () => {
+
     const vals =
         [null, 3, 1, 6, 7, null, 4, null, 9,
             null, null, null, 8, 3, null, null, null, null,
@@ -17,6 +23,20 @@ const App: React.FC = () => {
             4, 9, null, null, 5, 7, 2, 3, null,
             2, null, null, null, 9, null, 5, null, 7,
             7, null, 3, 2, null, null, 6, null, 1] as Array<SquareValue | null>;
+
+    const groups =
+        [
+            [0, 1, 2, 9, 10, 11, 18, 19, 20],
+            [3, 4, 5, 12, 13, 14, 21, 22, 23],
+            [6, 7, 8, 15, 16, 17, 24, 25, 26],
+            [27, 28, 29, 36, 37, 38, 45, 46, 47],
+            [30, 31, 32, 39, 40, 41, 48, 49, 50],
+            [33, 34, 35, 42, 43, 44, 51, 52, 53],
+            [54, 55, 56, 63, 64, 65, 72, 73, 74],
+            [57, 58, 59, 66, 67, 68, 75, 76, 77],
+            [60, 61, 62, 69, 70, 71, 78, 79, 80],
+        ];
+
     const basicVals =
         [0, 1, 2, 3, 4, 5, 6, 7, 8,
             9, 10, 11, 12, 13, 14, 15, 16, 17,
@@ -27,18 +47,7 @@ const App: React.FC = () => {
             54, 55, 56, 57, 58, 59, 60, 61, 62,
             63, 64, 65, 66, 67, 68, 69, 70, 71,
             72, 73, 74, 75, 76, 77, 78, 79, 80] as Array<SquareValue | null>;
-    const groups =
-        [
-            [0, 1, 2, 9, 10, 11, 18, 19, 20],
-            [3, 4, 5, 12, 13, 14, 21, 22, 23],
-            [6, 7, 8, 15, 16, 17, 24, 25, 26],
-            [27, 28, 29, 36, 37, 38, 45, 46, 47],
-            [30, 31, 32, 39, 40, 41, 48, 49, 60],
-            [33, 34, 35, 42, 43, 44, 51, 52, 53],
-            [54, 55, 56, 63, 64, 65, 72, 73, 74],
-            [57, 58, 59, 66, 67, 68, 75, 76, 77],
-            [60, 61, 62, 69, 70, 71, 78, 79, 80],
-        ];
+
     return (
         <div className="App">
             <header className="App-header">
@@ -57,12 +66,38 @@ type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
 type NumberMode = "normal" | "corner";
 
+/**
+ * @interface shape of Board.state
+ *
+ * @property {Set<SquareAddress>} contradicts
+ *      Updated when check buttons is clicked. All seemingly incorrect squares
+ *      are added to Board.state.contradicts and are colored accordingly.
+ * @property {boolean} highlighting
+ *      True when mouse is held down over Square components. Determines whether
+ *      to add Squares hovered over to Board.state.highlights.
+ * @property {Map<SquareAddress, Set<SquareValue>>} markingMap
+ *      A mapping of each Square Component's SquareAddress to its corresponding
+ *      Set of markings. The contents of the Set of markings are accordingly
+ *      rendered in the correct positions.
+ * @property {Set<SquareAddress>} mouseOverHighlighting
+ *      Set of currently selected Square components, are all colored accordingly.
+ * @property {boolean} multiStrokeHighlighting
+ *      True when Command Key is pressed.
+ * @property {NumberMode} numpadMode
+ *      Can either be in "normal" or "corner" mode. Determines whether the numpad
+ *      buttons add a marking or a value to the Square Component.
+ * @property {Map<SquareAddress, SquareValue>} values
+ *      A mapping of each Square Component's SquareAddress to its corresponding
+ *      value.
+ */
 interface BoardState {
-    highlights: Set<SquareAddress>;
     contradicts: Set<SquareAddress>;
-    values: Map<SquareAddress, SquareValue>;
+    highlights: Set<SquareAddress>;
     markingMap: Map<SquareAddress, Set<SquareValue>>;
+    mouseOverHighlighting: boolean;
+    multiStrokeHighlighting: boolean;
     numpadMode: NumberMode;
+    values: Map<SquareAddress, SquareValue>;
 }
 
 interface BoardProps {
@@ -75,17 +110,23 @@ class Board extends React.Component<BoardProps, BoardState> {
         contradicts: new Set([38]),
         highlights: new Set([37]),
         markingMap: new Map(),
+        mouseOverHighlighting: false,
+        multiStrokeHighlighting: false,
         numpadMode: "normal",
         values: new Map(),
     };
 
-    /**
-     * // TODO: other highlight functionality
-     */
-    public toggleSelectSquare(i: SquareAddress) {
-        const newState = _.cloneDeep(this.state);
-        newState.highlights = new Set([i]);
-        this.setState(newState);
+    private screenRef: RefObject<HTMLDivElement>;
+
+    constructor(props: BoardProps) {
+        super(props);
+        this.screenRef = React.createRef<HTMLDivElement>();
+    }
+
+    public componentDidMount() {
+        if (this.screenRef.current !== null) {
+            this.screenRef.current.focus();
+        }
     }
 
     public toggleNumpadMode() {
@@ -152,51 +193,145 @@ class Board extends React.Component<BoardProps, BoardState> {
         this.setState(newState);
     }
 
-    public handlePress = (e: KeyboardEvent) => {
-        let i = parseInt(e.key, 10);
-        console.log(i);
-        if (!isNaN(i) && i !== 0) {
-            console.log("i = " + i);
+    /**
+     * Deselect / unhighlight all highlighted squares.
+     */
+    public deselectSquares(): void {
+        const newState = _.cloneDeep(this.state);
+        newState.mouseOverHighlighting = false;
+        newState.highlights = new Set<SquareAddress>();
+        this.setState(newState);
+    }
+
+    public handleGlobalKeyDown = (e: KeyboardEvent) => {
+        if (e.keyCode === KEY_DELETE) {
+            e.preventDefault();
+            this.deleteSelectedSquares();
+            return;
+        }
+        if (e.keyCode === KEY_TAB) {
+            e.preventDefault();
+            this.toggleNumpadMode();
+            return;
+        }
+        if (e.keyCode === KEY_COMMAND) { // Command Key
+            e.preventDefault();
+            const newState = _.cloneDeep(this.state);
+            newState.multiStrokeHighlighting = true;
+            this.setState(newState);
+            return;
+        }
+        if (e.keyCode >= KEY_1 && e.keyCode <= KEY_9) {
+            const i = (e.keyCode - KEY_1 + 1) as SquareValue;
             if (this.state.numpadMode === "normal") {
-                this.normalMarkSelectedSquares(i as SquareValue);
+                this.normalMarkSelectedSquares(i);
             } else {
-                this.cornerMarkSelectedSquares(i as SquareValue);
+                this.cornerMarkSelectedSquares(i);
             }
         }
     }
 
+    public handleGlobalKeyUp = (e: KeyboardEvent) => {
+        if (e.keyCode === KEY_COMMAND) {
+            const newState = _.cloneDeep(this.state);
+            newState.multiStrokeHighlighting = false;
+            this.setState(newState);
+        }
+    }
+
+    public handleGlobalMouseDown = (e: MouseEvent) => {
+        if (!e.defaultPrevented && !this.state.multiStrokeHighlighting) {
+            e.preventDefault();
+            this.deselectSquares();
+        }
+    }
+
+    public handleGlobalMouseUp = (e: MouseEvent) => {
+        if (!e.defaultPrevented) {
+            e.preventDefault();
+            const newState = _.cloneDeep(this.state);
+            newState.mouseOverHighlighting = false;
+            this.setState(newState);
+        }
+    }
+
+    public handleSquareMouseDown = (i: SquareAddress) => (e: MouseEvent) => {
+        e.preventDefault();
+        const newState = _.cloneDeep(this.state);
+        newState.mouseOverHighlighting = true;
+        if (this.state.multiStrokeHighlighting) {
+            newState.highlights.add(i);
+        } else {
+            newState.highlights = new Set([i]);
+        }
+        this.setState(newState);
+    }
+
+    public handleSquareMouseOver = (i: SquareAddress) => (e: MouseEvent) => {
+        e.preventDefault();
+        if (this.state.mouseOverHighlighting) {
+            const newState = _.cloneDeep(this.state);
+            newState.highlights.add(i);
+            this.setState(newState);
+        }
+    }
+
+    public handleSquareMouseUp = (i: SquareAddress) => (e: MouseEvent) => {
+        e.preventDefault();
+        const newState = _.cloneDeep(this.state);
+        newState.mouseOverHighlighting = false;
+        this.setState(newState);
+    }
+
     public render() {
         return (
-            <div className="game" onKeyPress={this.handlePress} tabIndex={0}>
-                <div className="board">{this.renderSquares()}</div>
-                <div className="button-box">
-                    <div className="button-box-top">
-                        <ControlButtons
-                            onClickMode={() => {
-                                this.toggleNumpadMode();
-                            }}
-                            numpadMode={this.state.numpadMode}
-                        />
-                        <Numpad
-                            numpadMode={this.state.numpadMode}
-                            onClickCorner={(i: SquareValue) => {
-                                this.cornerMarkSelectedSquares(i);
-                            }}
-                            onClickNormal={(i: SquareValue) => {
-                                this.normalMarkSelectedSquares(i);
-                            }}
-                            onClickDel={() => {
-                                this.deleteSelectedSquares();
-                            }}
-                        />
-                    </div>
-                    <div className="button-box-bot">
-                        <Button variant="contained" color="primary">
-                            R E S T A R T
-                        </Button>
-                        <Button variant="contained" color="secondary">
-                            C H E C K
-                        </Button>
+            <div
+                className="screen"
+                ref={this.screenRef}
+                onKeyDown={this.handleGlobalKeyDown.bind(this)}
+                onKeyUp={this.handleGlobalKeyUp.bind(this)}
+                onMouseDown={(event) => {
+                    this.handleGlobalMouseDown(event as unknown as MouseEvent);
+                }}
+                onMouseUp={(event) => {
+                    this.handleGlobalMouseUp(event as unknown as MouseEvent);
+                }}
+                tabIndex={0}>
+                <div className="game">
+                    <div className="board">{this.renderSquares()}</div>
+                    <div className="button-box">
+                        <div className="button-box-top">
+                            <ControlButtons
+                                onClickMode={() => {
+                                    this.toggleNumpadMode();
+                                }}
+                                numpadMode={this.state.numpadMode}
+                            />
+                            <Numpad
+                                numpadMode={this.state.numpadMode}
+                                onClickCorner={(i: SquareValue) => {
+                                    this.cornerMarkSelectedSquares(i);
+                                }}
+                                onClickNormal={(i: SquareValue) => {
+                                    this.normalMarkSelectedSquares(i);
+                                }}
+                                onClickDel={() => {
+                                    this.deleteSelectedSquares();
+                                }}
+                            />
+                        </div>
+                        <div className="button-box-bot">
+                            <EventPreventingButton
+                                variant="contained"
+                                color="primary">
+                                R E S T A R T
+                            </EventPreventingButton>
+                            <EventPreventingButton
+                                variant="contained"
+                                color="secondary">
+                                C H E C K
+                            </EventPreventingButton>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -228,9 +363,9 @@ class Board extends React.Component<BoardProps, BoardState> {
             isHighlighted={isHighlighted}
             isContradicting={isContradicting}
             markings={marks}
-            onClick={() => {
-                this.toggleSelectSquare(i);
-            }}
+            onMouseDown={this.handleSquareMouseDown(i)}
+            onMouseOver={this.handleSquareMouseOver(i)}
+            onMouseUp={this.handleSquareMouseUp(i)}
         />;
     }
 }
@@ -241,7 +376,9 @@ interface SquareProps {
     isContradicting: boolean;
     value: SquareValue | null;
     markings: Set<SquareValue>;
-    onClick: () => void;
+    onMouseDown: (e: MouseEvent) => void;
+    onMouseOver: (e: MouseEvent) => void;
+    onMouseUp: (e: MouseEvent) => void;
 }
 
 class Square extends React.Component<SquareProps, {}> {
@@ -259,14 +396,29 @@ class Square extends React.Component<SquareProps, {}> {
 
     public render() {
         const light: string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
+        const permanent: string = this.props.isPermanent ? "permanent" : "";
         const displayMarkings: boolean = // determine if markings or value should be displayed
             this.props.markings.size !== 0 &&
             !this.props.isPermanent &&
             !this.props.value;
         return (
             <div
-                className={"square " + light}
-                onClick={this.props.onClick}
+                className={"square " + light + " " + permanent}
+                onMouseDown={
+                    (event) => {
+                        this.props.onMouseDown(event as unknown as MouseEvent);
+                    }
+                }
+                onMouseEnter={
+                    (event) => {
+                        this.props.onMouseOver(event as unknown as MouseEvent);
+                    }
+                }
+                onMouseUp={
+                    (event) => {
+                        this.props.onMouseUp(event as unknown as MouseEvent);
+                    }
+                }
             >
                 {displayMarkings ? this.renderMarkings() : this.props.value}
             </div>
@@ -291,21 +443,26 @@ class Numpad extends React.Component<NumpadProps, {}> {
     }
 
     public renderNumButton(i: SquareValue) {
-        return <Button
-            onClick={() => {
+        return <EventPreventingButton
+            onClick={(e) => {
                 this.props.numpadMode === "normal" ? this.props.onClickNormal(i) : this.props.onClickCorner(i);
             }}
             className="button-num"
             variant="contained">
             {i as number}
-        </Button>;
+        </EventPreventingButton>;
     }
 
     public render() {
         return (
             <div className="button-num-pad">
                 {this.renderNumButtons()}
-                <Button onClick={this.props.onClickDel} className="button" variant="contained">DELETE</Button>
+                <EventPreventingButton
+                    onClick={this.props.onClickDel}
+                    className="button"
+                    variant="contained">
+                    DELETE
+                </EventPreventingButton>
             </div>
         );
     }
@@ -320,23 +477,56 @@ class ControlButtons extends React.Component<ControlProps, {}> {
     public render() {
         return (
             <div className="button-col">
-                <Button
-                    onClick={this.props.numpadMode !== "normal" ? this.props.onClickMode : () => {}}
+                <EventPreventingButton
+                    onClick={this.props.numpadMode !== "normal" ? this.props.onClickMode : () => {
+                    }}
                     className="button"
                     color={this.props.numpadMode !== "normal" ? "default" : "primary"}
                     variant="contained">
                     Normal
-                </Button>
-                <Button
-                    onClick={this.props.numpadMode !== "corner" ? this.props.onClickMode : () => {}}
+                </EventPreventingButton>
+                <EventPreventingButton
+                    onClick={this.props.numpadMode !== "corner" ? this.props.onClickMode : () => {
+                    }}
                     className="button"
                     color={this.props.numpadMode !== "corner" ? "default" : "primary"}
                     variant="contained">
                     Corner
-                </Button>
-                <Button className="button" variant="contained">Undo</Button>
-                <Button className="button" variant="contained">Redo</Button>
+                </EventPreventingButton>
+                <EventPreventingButton
+                    className="button"
+                    variant="contained">
+                    Undo
+                </EventPreventingButton>
+                <EventPreventingButton
+                    className="button"
+                    variant="contained">
+                    Redo
+                </EventPreventingButton>
             </div>
+        );
+    }
+}
+
+const defaultPreventingListener = (event: SyntheticEvent) => { event.preventDefault(); };
+
+/**
+ * event.preventDefault is called to ensure that
+ * handleGlobalMouseDown does not run when this
+ * button is clicked.
+ *
+ * event.preventDefault is called to ensure that
+ * handleGlobalMouseUp does not run when this
+ * button is clicked.
+ */
+class EventPreventingButton extends React.Component<ButtonProps, {}> {
+    public render() {
+        return (
+            <Button
+                {... this.props}
+                onMouseDown={defaultPreventingListener}
+                onMouseUp={defaultPreventingListener}
+            />
         );
     }
 }
