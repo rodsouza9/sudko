@@ -69,20 +69,20 @@ type NumberMode = "normal" | "corner";
 /**
  * @interface shape of Board.state
  *
- * @property {boolean} continueHighlighting
- *      True when Command Key is pressed.
  * @property {Set<SquareAddress>} contradicts
  *      Updated when check buttons is clicked. All seemingly incorrect squares
  *      are added to Board.state.contradicts and are colored accordingly.
  * @property {boolean} highlighting
  *      True when mouse is held down over Square components. Determines whether
  *      to add Squares hovered over to Board.state.highlights.
- * @property {Set<SquareAddress>} highlights
- *      Set of currently selected Square components, are all colored accordingly.
  * @property {Map<SquareAddress, Set<SquareValue>>} markingMap
  *      A mapping of each Square Component's SquareAddress to its corresponding
  *      Set of markings. The contents of the Set of markings are accordingly
  *      rendered in the correct positions.
+ * @property {Set<SquareAddress>} mouseOverHighlighting
+ *      Set of currently selected Square components, are all colored accordingly.
+ * @property {boolean} multiStrokeHighlighting
+ *      True when Command Key is pressed.
  * @property {NumberMode} numpadMode
  *      Can either be in "normal" or "corner" mode. Determines whether the numpad
  *      buttons add a marking or a value to the Square Component.
@@ -91,11 +91,11 @@ type NumberMode = "normal" | "corner";
  *      value.
  */
 interface BoardState {
-    continueHighlighting: boolean;
     contradicts: Set<SquareAddress>;
-    highlighting: boolean;
     highlights: Set<SquareAddress>;
     markingMap: Map<SquareAddress, Set<SquareValue>>;
+    mouseOverHighlighting: boolean;
+    multiStrokeHighlighting: boolean;
     numpadMode: NumberMode;
     values: Map<SquareAddress, SquareValue>;
 }
@@ -107,11 +107,11 @@ interface BoardProps {
 
 class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
-        continueHighlighting: false,
         contradicts: new Set([38]),
-        highlighting: false,
         highlights: new Set([37]),
         markingMap: new Map(),
+        mouseOverHighlighting: false,
+        multiStrokeHighlighting: false,
         numpadMode: "normal",
         values: new Map(),
     };
@@ -233,7 +233,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public handleGlobalKeyUp = (e: KeyboardEvent) => {
-        if (e.keyCode === KEY_COMMAND) {s
+        if (e.keyCode === KEY_COMMAND) {
             const newState = _.cloneDeep(this.state);
             newState.continueHighlighting = false;
             this.setState(newState);
@@ -241,7 +241,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public handleGlobalMouseDown = (e: MouseEvent) => {
-        if (!e.defaultPrevented && !this.state.continueHighlighting) {
+        if (!e.defaultPrevented && !this.state.multiStrokeHighlighting) {
             e.preventDefault();
             this.deselectSquares();
         }
@@ -260,7 +260,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         e.preventDefault();
         const newState = _.cloneDeep(this.state);
         newState.highlighting = true;
-        if (this.state.continueHighlighting) {
+        if (this.state.multiStrokeHighlighting) {
             newState.highlights.add(i);
         } else {
             newState.highlights = new Set([i]);
@@ -270,7 +270,7 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public handleSquareMouseOver = (i: SquareAddress) => (e: MouseEvent) => {
         e.preventDefault();
-        if (this.state.highlighting) {
+        if (this.state.mouseOverHighlighting) {
             const newState = _.cloneDeep(this.state);
             newState.highlights.add(i);
             this.setState(newState);
@@ -323,9 +323,15 @@ class Board extends React.Component<BoardProps, BoardState> {
                         </div>
                         <div className="button-box-bot">
                             <Button
+                                // event.preventDefault is called to ensure that
+                                // handleGlobalMouseDown does not run when this
+                                // button is clicked.
                                 onMouseDown={(event) => {
                                     event.preventDefault();
                                 }}
+                                // event.preventDefault is called to ensure that
+                                // handleGlobalMouseUp does not run when this
+                                // button is clicked.
                                 onMouseUp={(event) => {
                                     event.preventDefault();
                                 }}
@@ -409,13 +415,14 @@ class Square extends React.Component<SquareProps, {}> {
 
     public render() {
         const light: string = this.props.isHighlighted ? "highlight" : (this.props.isContradicting ? "contradict" : "");
+        const permanent: string = this.props.isPermanent ? "permanent" : "";
         const displayMarkings: boolean = // determine if markings or value should be displayed
             this.props.markings.size !== 0 &&
             !this.props.isPermanent &&
             !this.props.value;
         return (
             <div
-                className={"square " + light}
+                className={"square " + light + permanent}
                 onMouseDown={
                     (event) => {
                         this.props.onMouseDown(event as unknown as MouseEvent);
@@ -432,9 +439,7 @@ class Square extends React.Component<SquareProps, {}> {
                     }
                 }
             >
-                {displayMarkings ? this.renderMarkings() :
-                    this.props.isPermanent ? <b>{this.props.value}</b> : this.props.value
-                }
+                {displayMarkings ? this.renderMarkings() : this.props.value}
             </div>
         );
     }
