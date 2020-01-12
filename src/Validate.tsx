@@ -1,5 +1,5 @@
 import React, {KeyboardEvent, RefObject} from "react";
-import {Groupings, SquareAddress, SquareValue, Values} from "./App";
+import {Contradictions, Groupings, SquareAddress, SquareValue, Values} from "./App";
 
 // tslint:disable-next-line:no-var-requires
 const _ = require("lodash");
@@ -9,7 +9,6 @@ export type Contradicts = boolean;
  /*
  * Contradictions should only contain contradicting mappings
  */
-export type Contradictions = SquareAddress[];
 
 const ROWS =   [[0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8],
                 [9 , 10, 11, 12, 13, 14, 15, 16, 17],
@@ -35,19 +34,19 @@ function checkNineArr(values: Values, addresses: SquareAddress[]): Contradiction
     if (addresses.length !== 9) {
         throw new Error("address length is no 9!");
     }
-    const contradictions: Contradictions = [];
+    const contradictions: Contradictions = new Set();
     for (let i = 0; i < 9; i++) {
         const address1 = addresses[i];
         const num1 = values.get(address1);
-        if (num1 === undefined) {
-            throw new Error("address " + address1 + " does not exist in map");
-        }
-        for (let j = i + 1; j < addresses.length; j++) {
-            const address2 = addresses[j];
-            const num2 = values.get(address2);
-            if (num1 === num2) {
-                contradictions.push(address1);
-                contradictions.push(address2);
+        if (num1 !== undefined) {
+            //throw new Error("address " + address1 + " does not exist in map");
+            for (let j = i + 1; j < addresses.length; j++) {
+                const address2 = addresses[j];
+                const num2 = values.get(address2);
+                if (num1 === num2) {
+                    contradictions.add(address1);
+                    contradictions.add(address2);
+                }
             }
         }
     }
@@ -55,35 +54,35 @@ function checkNineArr(values: Values, addresses: SquareAddress[]): Contradiction
 }
 
 function normalRowCheck(values: Values): Contradictions {
-    let contradictions: Contradictions = [];
+    let contradictions: Contradictions = new Set<SquareAddress>();
     for (const row of ROWS) {
         const otherContradictions = checkNineArr(values, row);
-        contradictions = _.union(contradictions, otherContradictions);
+        contradictions = new Set([...contradictions, ...otherContradictions]);
     }
     return contradictions;
 }
 
 function normalColumnCheck(values: Values): Contradictions {
-    let contradictions: Contradictions = [];
+    let contradictions: Contradictions = new Set<SquareAddress>();
     for (const col of COLUMNS) {
         const otherContradictions = checkNineArr(values, col);
-        contradictions = _.union(contradictions, otherContradictions);
+        contradictions = new Set([...contradictions, ...otherContradictions]);
     }
     return contradictions;
 }
 
 function normalGroupCheck(values: Values, grouping: Groupings): Contradictions {
-    let contradictions: Contradictions = [];
+    let contradictions: Contradictions = new Set<SquareAddress>();
     for (const group of grouping) {
         const otherContradictions = checkNineArr(values, group);
-        contradictions = _.union(contradictions, otherContradictions);
+        contradictions = new Set([...contradictions, ...otherContradictions]);
     }
     return contradictions;
 }
 
-function normalCheck(values: Values, grouping: Groupings): Contradictions {
+export function normalCheck(values: Values, grouping: Groupings): Contradictions {
     const rowCheck = normalRowCheck(values);
     const colCheck = normalColumnCheck(values);
     const groupCheck = normalGroupCheck(values, grouping);
-    return _.union(rowCheck, colCheck, groupCheck);
+    return new Set([...rowCheck, ...colCheck, ...groupCheck]);
 }

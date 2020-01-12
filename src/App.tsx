@@ -1,6 +1,7 @@
 import Button, {ButtonProps} from "@material-ui/core/Button";
 import React, {KeyboardEvent, RefObject, SyntheticEvent} from "react";
 import "./App.css";
+import * as Validate from "./Validate";
 
 // tslint:disable-next-line:no-var-requires
 const _ = require("lodash");
@@ -70,6 +71,8 @@ export type Values = Map<SquareAddress, SquareValue>;
 
 export type Groupings = SquareAddress[][];
 
+export type Contradictions = Set<SquareAddress>;
+
 /**
  * @interface shape of Board.state
  *
@@ -95,7 +98,7 @@ export type Groupings = SquareAddress[][];
  *      value.
  */
 interface BoardState {
-    contradicts: Set<SquareAddress>;
+    contradicts: Contradictions;
     highlights: Set<SquareAddress>;
     markingMap: Map<SquareAddress, Set<SquareValue>>;
     mouseOverHighlighting: boolean;
@@ -131,6 +134,26 @@ class Board extends React.Component<BoardProps, BoardState> {
         if (this.screenRef.current !== null) {
             this.screenRef.current.focus();
         }
+    }
+
+    public consolidateAllValues(): Values {
+        const map: Values = new Map();
+        for (let i = 0; i < 81; i++) {
+            if (this.isPermanent(i)) {
+                map.set(i, this.props.permanentValues[i] as SquareValue);
+            } else {
+                map.set(i, this.state.values.get(i) as SquareValue);
+            }
+        }
+        return map;
+    }
+
+    public updateContradictions() {
+        const allValues = this.consolidateAllValues();
+        const newContradictions = Validate.normalCheck(allValues, this.props.groupings);
+        const newState = _.cloneDeep(this.state);
+        newState.contradicts = newContradictions;
+        this.setState(newState);
     }
 
     public toggleNumpadMode() {
@@ -332,7 +355,9 @@ class Board extends React.Component<BoardProps, BoardState> {
                             </EventPreventingButton>
                             <EventPreventingButton
                                 variant="contained"
-                                color="secondary">
+                                color="secondary"
+                                onClick={() => {this.updateContradictions(); }}
+                            >
                                 C H E C K
                             </EventPreventingButton>
                         </div>
