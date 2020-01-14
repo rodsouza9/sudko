@@ -156,13 +156,6 @@ interface BoardProps {
     groupings: Groupings;
 }
 
-const history: History = [
-    {
-        markingMap: new Map(),
-        values: new Map(),
-    },
-];
-
 class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
         contradicts: new Set([38]),
@@ -306,7 +299,6 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public updateHistory(currentState: BoardState): BoardState {
         const newState = _.cloneDeep(currentState);
-        // console.log("old: " + Array.from(newState.history[newState.historyIndex].values.entries()));
         const instanceToAdd: Instance = {
             markingMap: _.cloneDeep(currentState.markingMap),
             values: _.cloneDeep(currentState.values),
@@ -321,21 +313,17 @@ class Board extends React.Component<BoardProps, BoardState> {
         // new current (watch Back to the Future)
         newState.history.splice(newState.historyIndex, currentState.history.length);
         newState.history.push(instanceToAdd);
-        // console.log("new: " + Array.from(newState.history[newState.historyIndex].values.entries()));
         return newState;
     }
 
     public undo(): void {
-        // console.log(this.state.historyIndex);
         if (this.state.historyIndex === 0) {
             return;
         }
         const newState = _.cloneDeep(this.state);
-        // console.log("old: " + Array.from(newState.history[newState.historyIndex].values.entries()));
         newState.historyIndex -= 1;
         newState.markingMap = _.cloneDeep(newState.history[newState.historyIndex].markingMap);
         newState.values = _.cloneDeep(newState.history[newState.historyIndex].values);
-        // console.log("new: " + Array.from(newState.history[newState.historyIndex].values.entries()));
         this.setState(newState);
     }
 
