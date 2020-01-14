@@ -158,8 +158,8 @@ interface BoardProps {
 
 class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
-        contradicts: new Set([38]),
-        highlights: new Set([37]),
+        contradicts: new Set(),
+        highlights: new Set(),
         history: [{markingMap: new Map(), values: new Map()}],
         historyIndex: 0,
         markingMap: new Map(),
@@ -338,6 +338,24 @@ class Board extends React.Component<BoardProps, BoardState> {
         this.setState(newState);
     }
 
+    public restart(): void {
+        const reset = window.confirm("Are you sure you would like to restart? All saved progress will be lost.");
+        if (reset) {
+            const newState: BoardState = {
+                contradicts: new Set(),
+                highlights: new Set(),
+                history: [{markingMap: new Map(), values: new Map()}],
+                historyIndex: 0,
+                markingMap: new Map(),
+                mouseOverHighlighting: false,
+                multiStrokeHighlighting: false,
+                numpadMode: "normal",
+                values: new Map(),
+            };
+            this.setState(newState);
+        }
+    }
+
     public handleGlobalKeyDown = (e: KeyboardEvent) => {
         if (e.keyCode === KEY_DELETE) {
             e.preventDefault();
@@ -464,7 +482,8 @@ class Board extends React.Component<BoardProps, BoardState> {
                         <div className="button-box-bot">
                             <EventPreventingButton
                                 variant="contained"
-                                color="primary">
+                                color="primary"
+                                onClick={() => {this.restart();}}>
                                 R E S T A R T
                             </EventPreventingButton>
                             <EventPreventingButton
