@@ -102,6 +102,13 @@ export type Groupings = SquareAddress[][];
  */
 export type Contradictions = Set<SquareAddress>;
 
+interface Instance {
+    markingMap: Map<SquareAddress, Set<SquareValue>>;
+    values: Values;
+}
+
+type History = Instance[];
+
 /**
  * @interface shape of Board.state
  *
@@ -111,6 +118,12 @@ export type Contradictions = Set<SquareAddress>;
  * @property {boolean} highlighting
  *      True when mouse is held down over Square components. Determines whether
  *      to add Squares hovered over to Board.state.highlights.
+ * @property {History} history
+ *      Array of Instances where each Instance represents the Board's mapMarking
+ *      and values at a specific time. The instances are ordered chronologically
+ *      to optimize for the undo and redo functionality
+ * @property {number} historyIndex
+ *      Index of the history variable that determines the state of the Board.
  * @property {Map<SquareAddress, Set<SquareValue>>} markingMap
  *      A mapping of each Square Component's SquareAddress to its corresponding
  *      Set of markings. The contents of the Set of markings are accordingly
@@ -129,6 +142,8 @@ export type Contradictions = Set<SquareAddress>;
 interface BoardState {
     contradicts: Contradictions;
     highlights: Set<SquareAddress>;
+    history: History;
+    historyIndex: number;
     markingMap: Map<SquareAddress, Set<SquareValue>>;
     mouseOverHighlighting: boolean;
     multiStrokeHighlighting: boolean;
@@ -141,10 +156,19 @@ interface BoardProps {
     groupings: Groupings;
 }
 
+const history: History = [
+    {
+        markingMap: new Map(),
+        values: new Map(),
+    },
+];
+
 class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
         contradicts: new Set([38]),
         highlights: new Set([37]),
+        history: [{markingMap: new Map(), values: new Map()}],
+        historyIndex: 0,
         markingMap: new Map(),
         mouseOverHighlighting: false,
         multiStrokeHighlighting: false,
@@ -215,17 +239,18 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public normalMarkSelectedSquares(i: SquareValue) {
-        const newState = _.cloneDeep(this.state);
+        let newState = _.cloneDeep(this.state);
         for (const address of this.state.highlights) {
             if (!this.isPermanent(address)) {
                 newState.values.set(address, i);
             }
         }
+        newState = this.updateHistory(newState);
         this.setState(newState);
     }
 
     public cornerMarkSelectedSquares(i: SquareValue) {
-        const newState = _.cloneDeep(this.state);
+        let newState = _.cloneDeep(this.state);
         for (const address of this.state.highlights) {
             if (this.isPermanent(address) || this.state.values.has(address)) {
                 continue;
@@ -240,6 +265,7 @@ class Board extends React.Component<BoardProps, BoardState> {
             }
             newState.markingMap.set(address, marks);
         }
+        newState = this.updateHistory(newState);
         this.setState(newState);
     }
 
@@ -275,6 +301,52 @@ class Board extends React.Component<BoardProps, BoardState> {
         const newState = _.cloneDeep(this.state);
         newState.mouseOverHighlighting = false;
         newState.highlights = new Set<SquareAddress>();
+        this.setState(newState);
+    }
+
+    public updateHistory(currentState: BoardState): BoardState {
+        const newState = _.cloneDeep(currentState);
+        // console.log("old: " + Array.from(newState.history[newState.historyIndex].values.entries()));
+        const instanceToAdd: Instance = {
+            markingMap: _.cloneDeep(currentState.markingMap),
+            values: _.cloneDeep(currentState.values),
+        };
+        const oldInstance = newState.history[newState.historyIndex];
+        if (_.isEqual(instanceToAdd, oldInstance)) {
+            return newState;
+        }
+        newState.historyIndex = currentState.historyIndex + 1;
+        // On any history update the future history must be
+        // deleted because it is no longer the future of the
+        // new current (watch Back to the Future)
+        newState.history.splice(newState.historyIndex, currentState.history.length);
+        newState.history.push(instanceToAdd);
+        // console.log("new: " + Array.from(newState.history[newState.historyIndex].values.entries()));
+        return newState;
+    }
+
+    public undo(): void {
+        // console.log(this.state.historyIndex);
+        if (this.state.historyIndex === 0) {
+            return;
+        }
+        const newState = _.cloneDeep(this.state);
+        // console.log("old: " + Array.from(newState.history[newState.historyIndex].values.entries()));
+        newState.historyIndex -= 1;
+        newState.markingMap = _.cloneDeep(newState.history[newState.historyIndex].markingMap);
+        newState.values = _.cloneDeep(newState.history[newState.historyIndex].values);
+        // console.log("new: " + Array.from(newState.history[newState.historyIndex].values.entries()));
+        this.setState(newState);
+    }
+
+    public redo(): void {
+        if (this.state.historyIndex + 1 === this.state.history.length) {
+            return;
+        }
+        const newState = _.cloneDeep(this.state);
+        newState.historyIndex += 1;
+        newState.markingMap = _.cloneDeep(newState.history[newState.historyIndex].markingMap);
+        newState.values = _.cloneDeep(newState.history[newState.historyIndex].values);
         this.setState(newState);
     }
 
@@ -379,6 +451,12 @@ class Board extends React.Component<BoardProps, BoardState> {
                             <ControlButtons
                                 onClickMode={() => {
                                     this.toggleNumpadMode();
+                                }}
+                                onClickUndo={() => {
+                                    this.undo();
+                                }}
+                                onClickRedo={() => {
+                                    this.redo();
                                 }}
                                 numpadMode={this.state.numpadMode}
                             />
@@ -548,6 +626,8 @@ class Numpad extends React.Component<NumpadProps, {}> {
 interface ControlProps {
     numpadMode: NumberMode;
     onClickMode: () => void;
+    onClickUndo: () => void;
+    onClickRedo: () => void;
 }
 
 class ControlButtons extends React.Component<ControlProps, {}> {
@@ -571,11 +651,13 @@ class ControlButtons extends React.Component<ControlProps, {}> {
                     Corner
                 </EventPreventingButton>
                 <EventPreventingButton
+                    onClick={this.props.onClickUndo}
                     className="button"
                     variant="contained">
                     Undo
                 </EventPreventingButton>
                 <EventPreventingButton
+                    onClick={this.props.onClickRedo}
                     className="button"
                     variant="contained">
                     Redo
