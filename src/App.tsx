@@ -153,7 +153,26 @@ class Board extends React.Component<BoardProps, BoardState> {
         const newContradictions = Validate.normalCheck(allValues, this.props.groupings);
         const newState = _.cloneDeep(this.state);
         newState.contradicts = newContradictions;
-        this.setState(newState);
+        this.setState(newState, this.contradictionAlert);
+    }
+
+    public contradictionAlert() {
+        if (this.state.contradicts.size > 0) {
+            alert("Sorry :/ There are some errors.");
+        } else if (this.isFilled()) {
+            alert("C O N G R A D U L A T I O N S ! ! !");
+        } else {
+            alert("No errors! Keep going!");
+        }
+    }
+
+    public isFilled(): boolean {
+        for (let i = 0; i < 81; i++) {
+            if (!this.isPermanent(i) && !this.state.values.has(i)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public toggleNumpadMode() {
