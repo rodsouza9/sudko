@@ -61,16 +61,47 @@ const App: React.FC = () => {
     );
 };
 
+/**
+ * @type {number} SquareAddress
+ *      A number ranging between 0 and 80 which represents a Square's position in
+ *      the sudoku board.
+ */
 export type SquareAddress = number;
 
+/**
+ * @type {1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9} SquareValue
+ *      A number ranging between 0 and 9 which represents the value of a Square
+ *      in the sudoku board.
+ */
 export type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
+/**
+ * @type {"normal" | "corner"} NumberMode
+ *      Determines whether the number buttons will fill in a Square's value or
+ *      its corner marking.
+ */
 export type NumberMode = "normal" | "corner";
 
+/**
+ * @type {Map<SquareAddress, SquareValue>} Values
+ *      A mapping of each Square Component's SquareAddress to its corresponding
+ *      value.
+ */
 export type Values = Map<SquareAddress, SquareValue>;
 
+/**
+ * @type {SquareAddress[][]} Groupings
+ *      List of groupings of Squares. Each grouping determines which elements are
+ *      in each box in the sudoku board.
+ */
 export type Groupings = SquareAddress[][];
 
+/**
+ * @type {Set<SquareAddress>} Contradictions
+ *      A set of square addresses corresponding to the Square's which contradict
+ *      with each other. A contradiction occurs when two squares with the same
+ *      value appear in the same row, column, or group.
+ */
 export type Contradictions = Set<SquareAddress>;
 
 /**
