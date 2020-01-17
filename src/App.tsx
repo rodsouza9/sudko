@@ -1,10 +1,8 @@
 import Button, {ButtonProps} from "@material-ui/core/Button";
+import * as _ from "lodash";
 import React, {KeyboardEvent, RefObject, SyntheticEvent} from "react";
 import "./App.css";
 import * as Validate from "./Types";
-
-// tslint:disable-next-line:no-var-requires
-const _ = require("lodash");
 
 const KEY_DELETE = 8;
 const KEY_TAB = 9;
@@ -234,7 +232,7 @@ class Board extends React.Component<BoardProps, BoardState> {
             }
             const marks = newState.markingMap.has(address) ?
                 newState.markingMap.get(address) as Set<SquareValue> :
-                new Set();
+                new Set() as Set<SquareValue>;
             if (marks.has(i)) {
                 marks.delete(i);
             } else {
