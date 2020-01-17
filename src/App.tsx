@@ -1,7 +1,7 @@
 import Button, {ButtonProps} from "@material-ui/core/Button";
 import React, {KeyboardEvent, RefObject, SyntheticEvent} from "react";
 import "./App.css";
-import * as Validate from "./Validate";
+import * as Validate from "./Types";
 
 // tslint:disable-next-line:no-var-requires
 const _ = require("lodash");

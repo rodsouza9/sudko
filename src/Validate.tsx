@@ -1,10 +1,8 @@
 import React, {KeyboardEvent, RefObject} from "react";
-import {Contradictions, Groupings, SquareAddress, SquareValue, Values} from "./App";
+import {Contradictions, Groupings, SquareAddress, SquareValue, Values} from "./Types";
 
 // tslint:disable-next-line:no-var-requires
 const _ = require("lodash");
-
-export type Contradicts = boolean;
 
  /*
  * Contradictions should only contain contradicting mappings
@@ -39,7 +37,6 @@ function checkNineArr(values: Values, addresses: SquareAddress[]): Contradiction
         const address1 = addresses[i];
         const num1 = values.get(address1);
         if (num1 !== undefined) {
-            //throw new Error("address " + address1 + " does not exist in map");
             for (let j = i + 1; j < addresses.length; j++) {
                 const address2 = addresses[j];
                 const num2 = values.get(address2);
