@@ -50,25 +50,7 @@ function checkNineArr(values: Values, addresses: SquareAddress[]): Contradiction
     return contradictions;
 }
 
-function normalRowCheck(values: Values): Contradictions {
-    let contradictions: Contradictions = new Set<SquareAddress>();
-    for (const row of ROWS) {
-        const otherContradictions = checkNineArr(values, row);
-        contradictions = new Set([...contradictions, ...otherContradictions]);
-    }
-    return contradictions;
-}
-
-function normalColumnCheck(values: Values): Contradictions {
-    let contradictions: Contradictions = new Set<SquareAddress>();
-    for (const col of COLUMNS) {
-        const otherContradictions = checkNineArr(values, col);
-        contradictions = new Set([...contradictions, ...otherContradictions]);
-    }
-    return contradictions;
-}
-
-function normalGroupCheck(values: Values, grouping: Groupings): Contradictions {
+function checkGroup(values: Values, grouping: Groupings): Contradictions {
     let contradictions: Contradictions = new Set<SquareAddress>();
     for (const group of grouping) {
         const otherContradictions = checkNineArr(values, group);
@@ -78,8 +60,8 @@ function normalGroupCheck(values: Values, grouping: Groupings): Contradictions {
 }
 
 export function normalCheck(values: Values, grouping: Groupings): Contradictions {
-    const rowCheck = normalRowCheck(values);
-    const colCheck = normalColumnCheck(values);
-    const groupCheck = normalGroupCheck(values, grouping);
+    const rowCheck = checkGroup(values, ROWS);
+    const colCheck = checkGroup(values, COLUMNS);
+    const groupCheck = checkGroup(values, grouping);
     return new Set([...rowCheck, ...colCheck, ...groupCheck]);
 }
