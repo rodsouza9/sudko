@@ -53,12 +53,14 @@ function checkNineArr(values: Values, addresses: SquareAddress[]): Contradiction
  *        grouping is supposed to correspond to SquareValue's of unique value.
  */
 function checkGroup(values: Values, groupings: Groupings): Contradictions {
-    const contradictArray = groupings.map( (group) => {
+    return groupings
+        .map( (group) => {
         return checkNineArr(values, group);
-    });
-    return contradictArray.reduce((allContradictions, thisContradiction) => {
+        })
+        .reduce((allContradictions, thisContradiction) => {
         return new Set([...allContradictions, ...thisContradiction]);
-    }, new Set<SquareAddress>());
+        },
+        new Set<SquareAddress>());
 }
 
 export function normalCheck(values: Values, grouping: Groupings): Contradictions {
