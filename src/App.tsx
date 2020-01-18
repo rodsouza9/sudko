@@ -179,7 +179,7 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public updateContradictions() {
         const allValues = this.consolidateAllValues();
-        const newContradictions = Validate.normalCheck(allValues, this.props.groupings);
+        const newContradictions = Validate.normalSudokuValidator(allValues, this.props.groupings);
         const newState = _.cloneDeep(this.state);
         newState.contradicts = newContradictions;
         this.setState(newState, this.contradictionAlert);

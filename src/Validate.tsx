@@ -50,7 +50,7 @@ function checkNineArr(values: Values, addresses: SquareAddress[]): Contradiction
  * @param values {Values} A Map of square addresses of each Square in the sudoku
  *        board to their corresponding SquareValue.
  * @param groupings {Groupings} A double array of groupings of Squares. Each
- *        grouping is supposed to correspond to SquareValue's of unique value.
+ *        grouping is supposed to correspond to unique SquareValue.
  */
 function checkGroup(values: Values, groupings: Groupings): Contradictions {
     return groupings
@@ -63,7 +63,14 @@ function checkGroup(values: Values, groupings: Groupings): Contradictions {
         new Set<SquareAddress>());
 }
 
-export function normalCheck(values: Values, grouping: Groupings): Contradictions {
+/**
+ * Returns all contradictions of a normal sudoku board.
+ * @param values {Values} A Map of square addresses of each Square in the sudoku
+ *        board to their corresponding SquareValue.
+ * @param grouping {Groupings} A double array of groupings of Squares. Each
+ *        grouping is supposed to correspond to unique SquareValue.
+ */
+export function normalSudokuValidator(values: Values, grouping: Groupings): Contradictions {
     const rowCheck = checkGroup(values, ROWS);
     const colCheck = checkGroup(values, COLUMNS);
     const groupCheck = checkGroup(values, grouping);
