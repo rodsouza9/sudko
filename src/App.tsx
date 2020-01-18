@@ -103,8 +103,10 @@ export type Groupings = SquareAddress[][];
 export type Contradictions = Set<SquareAddress>;
 
 interface Instance {
+    previousInstance: Instance | null;
     markingMap: Map<SquareAddress, Set<SquareValue>>;
     values: Values;
+    nextInstance: Instance | null;
 }
 
 type History = Instance[];
@@ -118,12 +120,9 @@ type History = Instance[];
  * @property {boolean} highlighting
  *      True when mouse is held down over Square components. Determines whether
  *      to add Squares hovered over to Board.state.highlights.
- * @property {History} history
- *      Array of Instances where each Instance represents the Board's mapMarking
- *      and values at a specific time. The instances are ordered chronologically
- *      to optimize for the undo and redo functionality
- * @property {number} historyIndex
- *      Index of the history variable that determines the state of the Board.
+ * @property {Instance} instance
+ *      Double linked list that enables history management such as undo and redo
+ *      functionality.
  * @property {Map<SquareAddress, Set<SquareValue>>} markingMap
  *      A mapping of each Square Component's SquareAddress to its corresponding
  *      Set of markings. The contents of the Set of markings are accordingly
@@ -142,8 +141,7 @@ type History = Instance[];
 interface BoardState {
     contradicts: Contradictions;
     highlights: Set<SquareAddress>;
-    history: History;
-    historyIndex: number;
+    instance: Instance;
     markingMap: Map<SquareAddress, Set<SquareValue>>;
     mouseOverHighlighting: boolean;
     multiStrokeHighlighting: boolean;
@@ -160,8 +158,12 @@ class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
         contradicts: new Set(),
         highlights: new Set(),
-        history: [{markingMap: new Map(), values: new Map()}],
-        historyIndex: 0,
+        instance: {
+            markingMap: new Map(),
+            nextInstance: null,
+            previousInstance: null,
+            values: new Map(),
+        },
         markingMap: new Map(),
         mouseOverHighlighting: false,
         multiStrokeHighlighting: false,
@@ -266,7 +268,7 @@ class Board extends React.Component<BoardProps, BoardState> {
      * onClick for DELETE button
      */
     public deleteSelectedSquares(): void {
-        const newState = _.cloneDeep(this.state);
+        let newState = _.cloneDeep(this.state);
         let deleteValues: boolean = false; // Determine weather to delete all values or delete all markings
         for (const address of this.state.highlights) {
             if (!this.isPermanent(address) && newState.values.has(address)) {
@@ -284,6 +286,7 @@ class Board extends React.Component<BoardProps, BoardState> {
                 newState.markingMap.set(address, new Set());
             }
         }
+        newState = this.updateHistory(newState);
         this.setState(newState);
     }
 
@@ -299,43 +302,60 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public updateHistory(currentState: BoardState): BoardState {
         const newState = _.cloneDeep(currentState);
+        const oldInstance = currentState.instance;
+        console.log("old: " + Array.from(oldInstance.values.entries()));
         const instanceToAdd: Instance = {
-            markingMap: _.cloneDeep(currentState.markingMap),
-            values: _.cloneDeep(currentState.values),
+            markingMap: currentState.markingMap,
+            nextInstance: null,
+            previousInstance: currentState.instance,
+            values: currentState.values,
         };
-        const oldInstance = newState.history[newState.historyIndex];
-        if (_.isEqual(instanceToAdd, oldInstance)) {
+        console.log("new: " + Array.from(instanceToAdd.values.entries()));
+        if (_.isEqual(instanceToAdd.values, oldInstance.values) &&
+            _.isEqual(instanceToAdd.markingMap, oldInstance.markingMap)) {
             return newState;
         }
-        newState.historyIndex = currentState.historyIndex + 1;
+        currentState.instance.nextInstance = instanceToAdd;
+        newState.instance = instanceToAdd;
+        /*newState.historyIndex = currentState.historyIndex + 1;
         // On any history update the future history must be
         // deleted because it is no longer the future of the
         // new current (watch Back to the Future)
         newState.history.splice(newState.historyIndex, currentState.history.length);
-        newState.history.push(instanceToAdd);
+        newState.history.push(instanceToAdd);*/
         return newState;
     }
 
     public undo(): void {
-        if (this.state.historyIndex === 0) {
+        const newState = _.cloneDeep(this.state);
+        if (newState.instance.previousInstance === null) {
             return;
         }
-        const newState = _.cloneDeep(this.state);
-        newState.historyIndex -= 1;
-        newState.markingMap = _.cloneDeep(newState.history[newState.historyIndex].markingMap);
-        newState.values = _.cloneDeep(newState.history[newState.historyIndex].values);
+        newState.instance = newState.instance.previousInstance;
+        newState.markingMap = _.cloneDeep(newState.instance.markingMap);
+        newState.values = _.cloneDeep(newState.instance.values);
         this.setState(newState);
+        /*newState.historyIndex -= 1;
+        newState.markingMap = _.cloneDeep(newState.history[newState.historyIndex].markingMap);
+        newState.values = _.cloneDeep(newState.history[newState.historyIndex].values);*/
     }
 
     public redo(): void {
-        if (this.state.historyIndex + 1 === this.state.history.length) {
+        const newState = _.cloneDeep(this.state);
+        if (newState.instance.nextInstance) {
+            newState.instance = newState.instance.nextInstance;
+            newState.markingMap = _.cloneDeep(newState.instance.markingMap);
+            newState.values = _.cloneDeep(newState.instance.values);
+        }
+        this.setState(newState);
+        /*if (this.state.historyIndex + 1 === this.state.history.length) {
             return;
         }
         const newState = _.cloneDeep(this.state);
         newState.historyIndex += 1;
         newState.markingMap = _.cloneDeep(newState.history[newState.historyIndex].markingMap);
         newState.values = _.cloneDeep(newState.history[newState.historyIndex].values);
-        this.setState(newState);
+        */
     }
 
     public restart(): void {
@@ -344,8 +364,12 @@ class Board extends React.Component<BoardProps, BoardState> {
             const newState: BoardState = {
                 contradicts: new Set(),
                 highlights: new Set(),
-                history: [{markingMap: new Map(), values: new Map()}],
-                historyIndex: 0,
+                instance: {
+                    markingMap: new Map(),
+                    nextInstance: null,
+                    previousInstance: null,
+                    values: new Map(),
+                },
                 markingMap: new Map(),
                 mouseOverHighlighting: false,
                 multiStrokeHighlighting: false,
@@ -483,7 +507,7 @@ class Board extends React.Component<BoardProps, BoardState> {
                             <EventPreventingButton
                                 variant="contained"
                                 color="primary"
-                                onClick={() => {this.restart();}}>
+                                onClick={() => {this.restart(); }}>
                                 R E S T A R T
                             </EventPreventingButton>
                             <EventPreventingButton
