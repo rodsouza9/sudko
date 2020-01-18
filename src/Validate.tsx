@@ -1,5 +1,5 @@
-import React, {KeyboardEvent, RefObject} from "react";
-import {Contradictions, Groupings, SquareAddress, SquareValue, Values} from "./Types";
+import React from "react";
+import {Contradictions, Groupings, SquareAddress, Values} from "./Types";
 
 const ROWS =   [[0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8],
                 [9 , 10, 11, 12, 13, 14, 15, 16, 17],
@@ -43,13 +43,22 @@ function checkNineArr(values: Values, addresses: SquareAddress[]): Contradiction
     return contradictions;
 }
 
-function checkGroup(values: Values, grouping: Groupings): Contradictions {
-    let contradictions: Contradictions = new Set<SquareAddress>();
-    for (const group of grouping) {
-        const otherContradictions = checkNineArr(values, group);
-        contradictions = new Set([...contradictions, ...otherContradictions]);
-    }
-    return contradictions;
+/**
+ * Combines the collection of Contradictions from each group in groupings. All
+ * SquareAddresses in a group corresponding to the same SquareValues are returned in
+ * the Set Contradictions.
+ * @param values {Values} A Map of square addresses of each Square in the sudoku
+ *        board to their corresponding SquareValue.
+ * @param groupings {Groupings} A double array of groupings of Squares. Each
+ *        grouping is supposed to correspond to SquareValue's of unique value.
+ */
+function checkGroup(values: Values, groupings: Groupings): Contradictions {
+    const contradictArray = groupings.map( (group) => {
+        return checkNineArr(values, group);
+    });
+    return contradictArray.reduce((allContradictions, thisContradiction) => {
+        return new Set([...allContradictions, ...thisContradiction]);
+    }, new Set<SquareAddress>());
 }
 
 export function normalCheck(values: Values, grouping: Groupings): Contradictions {
