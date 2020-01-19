@@ -52,7 +52,7 @@ function checkNineArr(values: Values, addresses: SquareAddress[]): Contradiction
  * @param groupings {Groupings} A double array of groupings of Squares. Each
  *        grouping is supposed to correspond to unique SquareValue.
  */
-function checkGroup(values: Values, groupings: Groupings): Contradictions {
+export function checkGroup(values: Values, groupings: Groupings): Contradictions {
     return groupings
         .map( (group) => {
         return checkNineArr(values, group);
