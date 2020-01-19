@@ -232,7 +232,7 @@ class Board extends React.Component<BoardProps, BoardState> {
             }
             const marks = newState.markingMap.has(address) ?
                 newState.markingMap.get(address) as Set<SquareValue> :
-                new Set() as Set<SquareValue>;
+                new Set<SquareValue>();
             if (marks.has(i)) {
                 marks.delete(i);
             } else {

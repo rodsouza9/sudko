@@ -21,7 +21,7 @@ const COLUMNS = [[0, 9 , 18, 27, 36, 45, 54, 63, 72],
                  [7, 16, 25, 34, 43, 52, 61, 70, 79],
                  [8, 17, 26, 35, 44, 53, 62, 71, 80]];
 
-function checkNineArr(values: Values, addresses: SquareAddress[]): Contradictions {
+function checkGroup(values: Values, addresses: SquareAddress[]): Contradictions {
     if (addresses.length !== 9) {
         throw new Error("address length is no 9!");
     }
@@ -52,10 +52,10 @@ function checkNineArr(values: Values, addresses: SquareAddress[]): Contradiction
  * @param groupings {Groupings} A double array of groupings of Squares. Each
  *        grouping is supposed to correspond to unique SquareValue.
  */
-export function checkGroup(values: Values, groupings: Groupings): Contradictions {
+export function checkGroupings(values: Values, groupings: Groupings): Contradictions {
     return groupings
         .map( (group) => {
-        return checkNineArr(values, group);
+        return checkGroup(values, group);
         })
         .reduce((allContradictions, thisContradiction) => {
         return new Set([...allContradictions, ...thisContradiction]);
@@ -71,8 +71,9 @@ export function checkGroup(values: Values, groupings: Groupings): Contradictions
  *        grouping is supposed to correspond to unique SquareValue.
  */
 export function normalSudokuValidator(values: Values, grouping: Groupings): Contradictions {
-    const rowCheck = checkGroup(values, ROWS);
+    return checkGroupings(values, [...ROWS, ...COLUMNS, ...grouping]);
+    /*const rowCheck = checkGroup(values, ROWS);
     const colCheck = checkGroup(values, COLUMNS);
     const groupCheck = checkGroup(values, grouping);
-    return new Set([...rowCheck, ...colCheck, ...groupCheck]);
+    return new Set([...rowCheck, ...colCheck, ...groupCheck]);*/
 }
