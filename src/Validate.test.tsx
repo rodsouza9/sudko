@@ -22,42 +22,49 @@ const COLUMNS = [[0, 9 , 18, 27, 36, 45, 54, 63, 72],
     [7, 16, 25, 34, 43, 52, 61, 70, 79],
     [8, 17, 26, 35, 44, 53, 62, 71, 80]];
 
-test("test of tests", () => {
-    expect(1 + 2).toBe(3);
-});
+describe("test checkGroupings", () => {
+    test("with empty Values map", () => {
+        const val: Values = new Map<SquareAddress, SquareValue>();
+        const group: Groupings = [[0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8]];
+        const set = Validate.checkGroupings(val, group);
+        expect(set).toEqual(new Set<SquareAddress>());
+    });
+    describe("with one group in groupings", () => {
+        const noContradiction = new Set<SquareAddress>();
+        const group: Groupings = [[0, 1, 2, 3, 4, 5, 6, 7, 8]];
 
-test("checkGroup test 1 - empty Values", () => {
-    const val: Values = new Map<SquareAddress, SquareValue>();
-    const group: Groupings = [[0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8]];
-    const set = Validate.checkGroupings(val, group);
-    expect(set).toEqual(new Set<SquareAddress>());
-});
+        test("with one item in Value", () => {
+            const val1: Values = new Map<SquareAddress, SquareValue>();
+            val1.set(0, 1);
+            const set1 = Validate.checkGroupings(val1, group);
+            expect(set1).toEqual(noContradiction);
+        });
 
-test("checkGroup test 2.0 - single group", () => {
-    const val1: Values = new Map<SquareAddress, SquareValue>();
-    val1.set(0, 1);
-    const group1: Groupings = [[0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8]];
-    const set1 = Validate.checkGroupings(val1, group1);
-    expect(set1).toEqual(new Set<SquareAddress>());
+        test("checkGroup test 2.0 - single group", () => {
+            const val2: Values = new Map<SquareAddress, SquareValue>();
+            val2.set(0, 1);
+            val2.set(1, 2);
+            val2.set(2, 3);
+            val2.set(3, 4);
+            const set2 = Validate.checkGroupings(val2, group);
+            expect(set2).toEqual(new Set<SquareAddress>());
+        });
 
-    const val2: Values = new Map<SquareAddress, SquareValue>();
-    val2.set(0, 1); val2.set(1, 2); val2.set(2, 3); val2.set(3, 4);
-    const set2 = Validate.checkGroupings(val2, group1);
-    expect(set2).toEqual(new Set<SquareAddress>());
-
-    const val3: Values = new Map<SquareAddress, SquareValue>();
-    val3.set(0, 1); val3.set(1, 1); val3.set(2, 2); val3.set(3, 3);
-    const set3 = Validate.checkGroupings(val3, group1);
-    const set3E = new Set<SquareAddress>();
-    set3E.add(0); set3E.add(1);
-    expect(set3).toEqual(set3E);
-
-    const val4: Values = new Map<SquareAddress, SquareValue>();
-    val4.set(0, 1); val4.set(1, 1); val4.set(2, 2); val4.set(3, 2);
-    const set4 = Validate.checkGroupings(val4, group1);
-    const set4E = new Set<SquareAddress>();
-    set4E.add(0); set4E.add(1); set4E.add(2); set4E.add(3);
-    expect(set4).toEqual(set4E);
+        test("checkGroup test 2.0 - single group", () => {
+            const val3: Values = new Map<SquareAddress, SquareValue>();
+            val3.set(0, 1); val3.set(1, 1); val3.set(2, 2); val3.set(3, 3);
+            const set3 = Validate.checkGroupings(val3, group);
+            const set3E = new Set<SquareAddress>();
+            set3E.add(0); set3E.add(1);
+            expect(set3).toEqual(set3E);
+            const val4: Values = new Map<SquareAddress, SquareValue>();
+            val4.set(0, 1); val4.set(1, 1); val4.set(2, 2); val4.set(3, 2);
+            const set4 = Validate.checkGroupings(val4, group);
+            const set4E = new Set<SquareAddress>();
+            set4E.add(0); set4E.add(1); set4E.add(2); set4E.add(3);
+            expect(set4).toEqual(set4E);
+        });
+    });
 });
 
 // not entirely random but somewhat random
