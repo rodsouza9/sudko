@@ -109,8 +109,6 @@ interface Instance {
     nextInstance: Instance | null;
 }
 
-type History = Instance[];
-
 /**
  * @interface shape of Board.state
  *
@@ -123,10 +121,18 @@ type History = Instance[];
  * @property {Instance} instance
  *      Double linked list that enables history management such as undo and redo
  *      functionality.
- * @property {Map<SquareAddress, Set<SquareValue>>} markingMap
- *      A mapping of each Square Component's SquareAddress to its corresponding
- *      Set of markings. The contents of the Set of markings are accordingly
- *      rendered in the correct positions.
+ *      @child {Instance | null} previousInstance
+ *          A reference to the previous Instance. Used in undo functionality.
+ *      @child {Map<SquareAddress, Set<SquareValue>>} markingMap
+ *          A mapping of each Square Component's SquareAddress to its
+ *          corresponding Set of markings. The contents of the Set of markings
+ *          are accordingly rendered in the correct positions.
+ *      @child {Map<SquareAddress, SquareValue>} values
+ *          A mapping of each Square Component's SquareAddress to its
+ *          corresponding value.
+ *      @child {Instance | null} nextInstance
+ *          A reference to the next Instance, only exist after undo and before a
+ *          new update is made. Used in redo functionality.
  * @property {Set<SquareAddress>} mouseOverHighlighting
  *      Set of currently selected Square components, are all colored accordingly.
  * @property {boolean} multiStrokeHighlighting
@@ -134,19 +140,14 @@ type History = Instance[];
  * @property {NumberMode} numpadMode
  *      Can either be in "normal" or "corner" mode. Determines whether the numpad
  *      buttons add a marking or a value to the Square Component.
- * @property {Map<SquareAddress, SquareValue>} values
- *      A mapping of each Square Component's SquareAddress to its corresponding
- *      value.
  */
 interface BoardState {
     contradicts: Contradictions;
     highlights: Set<SquareAddress>;
     instance: Instance;
-    markingMap: Map<SquareAddress, Set<SquareValue>>;
     mouseOverHighlighting: boolean;
     multiStrokeHighlighting: boolean;
     numpadMode: NumberMode;
-    values: Values;
 }
 
 interface BoardProps {
@@ -164,11 +165,9 @@ class Board extends React.Component<BoardProps, BoardState> {
             previousInstance: null,
             values: new Map(),
         },
-        markingMap: new Map(),
         mouseOverHighlighting: false,
         multiStrokeHighlighting: false,
         numpadMode: "normal",
-        values: new Map(),
     };
 
     private screenRef: RefObject<HTMLDivElement>;
@@ -190,7 +189,7 @@ class Board extends React.Component<BoardProps, BoardState> {
             if (this.isPermanent(i)) {
                 map.set(i, this.props.permanentValues[i] as SquareValue);
             } else {
-                map.set(i, this.state.values.get(i) as SquareValue);
+                map.set(i, this.state.instance.values.get(i) as SquareValue);
             }
         }
         return map;
@@ -216,7 +215,7 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public isFilled(): boolean {
         for (let i = 0; i < 81; i++) {
-            if (!this.isPermanent(i) && !this.state.values.has(i)) {
+            if (!this.isPermanent(i) && !this.state.instance.values.has(i)) {
                 return false;
             }
         }
@@ -237,7 +236,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         let newState = _.cloneDeep(this.state);
         for (const address of this.state.highlights) {
             if (!this.isPermanent(address)) {
-                newState.values.set(address, i);
+                newState.instance.values.set(address, i);
             }
         }
         newState = this.updateHistory(newState);
@@ -247,18 +246,18 @@ class Board extends React.Component<BoardProps, BoardState> {
     public cornerMarkSelectedSquares(i: SquareValue) {
         let newState = _.cloneDeep(this.state);
         for (const address of this.state.highlights) {
-            if (this.isPermanent(address) || this.state.values.has(address)) {
+            if (this.isPermanent(address) || this.state.instance.values.has(address)) {
                 continue;
             }
-            const marks = newState.markingMap.has(address) ?
-                newState.markingMap.get(address) as Set<SquareValue> :
+            const marks = newState.instance.markingMap.has(address) ?
+                newState.instance.markingMap.get(address) as Set<SquareValue> :
                 new Set() as Set<SquareValue>;
             if (marks.has(i)) {
                 marks.delete(i);
             } else {
                 marks.add(i);
             }
-            newState.markingMap.set(address, marks);
+            newState.instance.markingMap.set(address, marks);
         }
         newState = this.updateHistory(newState);
         this.setState(newState);
@@ -271,7 +270,7 @@ class Board extends React.Component<BoardProps, BoardState> {
         let newState = _.cloneDeep(this.state);
         let deleteValues: boolean = false; // Determine weather to delete all values or delete all markings
         for (const address of this.state.highlights) {
-            if (!this.isPermanent(address) && newState.values.has(address)) {
+            if (!this.isPermanent(address) && newState.instance.values.has(address)) {
                 deleteValues = true;
                 break;
             }
@@ -281,9 +280,9 @@ class Board extends React.Component<BoardProps, BoardState> {
                 continue;
             }
             if (deleteValues) {
-                newState.values.delete(address);
+                newState.instance.values.delete(address);
             } else {
-                newState.markingMap.set(address, new Set());
+                newState.instance.markingMap.set(address, new Set());
             }
         }
         newState = this.updateHistory(newState);
@@ -302,20 +301,22 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public updateHistory(currentState: BoardState): BoardState {
         const newState = _.cloneDeep(currentState);
-        const oldInstance = currentState.instance;
+        const oldState = _.cloneDeep(this.state);
+        const oldInstance = oldState.instance;
         console.log("old: " + Array.from(oldInstance.values.entries()));
         const instanceToAdd: Instance = {
-            markingMap: currentState.markingMap,
+            markingMap: currentState.instance.markingMap,
             nextInstance: null,
-            previousInstance: currentState.instance,
-            values: currentState.values,
+            previousInstance: oldInstance,
+            values: currentState.instance.values,
         };
         console.log("new: " + Array.from(instanceToAdd.values.entries()));
         if (_.isEqual(instanceToAdd.values, oldInstance.values) &&
             _.isEqual(instanceToAdd.markingMap, oldInstance.markingMap)) {
             return newState;
         }
-        currentState.instance.nextInstance = instanceToAdd;
+        oldState.instance.nextInstance = instanceToAdd;
+        this.setState(oldState);
         newState.instance = instanceToAdd;
         /*newState.historyIndex = currentState.historyIndex + 1;
         // On any history update the future history must be
@@ -331,31 +332,17 @@ class Board extends React.Component<BoardProps, BoardState> {
         if (newState.instance.previousInstance === null) {
             return;
         }
-        newState.instance = newState.instance.previousInstance;
-        newState.markingMap = _.cloneDeep(newState.instance.markingMap);
-        newState.values = _.cloneDeep(newState.instance.values);
+        newState.instance = _.cloneDeep(newState.instance.previousInstance);
         this.setState(newState);
-        /*newState.historyIndex -= 1;
-        newState.markingMap = _.cloneDeep(newState.history[newState.historyIndex].markingMap);
-        newState.values = _.cloneDeep(newState.history[newState.historyIndex].values);*/
     }
 
     public redo(): void {
         const newState = _.cloneDeep(this.state);
-        if (newState.instance.nextInstance) {
-            newState.instance = newState.instance.nextInstance;
-            newState.markingMap = _.cloneDeep(newState.instance.markingMap);
-            newState.values = _.cloneDeep(newState.instance.values);
-        }
-        this.setState(newState);
-        /*if (this.state.historyIndex + 1 === this.state.history.length) {
+        if (newState.instance.nextInstance === null) {
             return;
         }
-        const newState = _.cloneDeep(this.state);
-        newState.historyIndex += 1;
-        newState.markingMap = _.cloneDeep(newState.history[newState.historyIndex].markingMap);
-        newState.values = _.cloneDeep(newState.history[newState.historyIndex].values);
-        */
+        newState.instance = _.cloneDeep(newState.instance.nextInstance);
+        this.setState(newState);
     }
 
     public restart(): void {
@@ -370,11 +357,9 @@ class Board extends React.Component<BoardProps, BoardState> {
                     previousInstance: null,
                     values: new Map(),
                 },
-                markingMap: new Map(),
                 mouseOverHighlighting: false,
                 multiStrokeHighlighting: false,
                 numpadMode: "normal",
-                values: new Map(),
             };
             this.setState(newState);
         }
@@ -539,12 +524,12 @@ class Board extends React.Component<BoardProps, BoardState> {
     public renderSquare(i: SquareAddress) {
         const isHighlighted = this.state.highlights.has(i);
         const isContradicting = this.state.contradicts.has(i);
-        const marks = this.state.markingMap.has(i) ?
-            this.state.markingMap.get(i) as Set<SquareValue> :
+        const marks = this.state.instance.markingMap.has(i) ?
+            this.state.instance.markingMap.get(i) as Set<SquareValue> :
             new Set() as Set<SquareValue>;
         return <Square
             value={this.isPermanent(i) ? this.props.permanentValues[i] :
-                this.state.values.has(i) ? this.state.values.get(i) as SquareValue : null}
+                this.state.instance.values.has(i) ? this.state.instance.values.get(i) as SquareValue : null}
             isPermanent={this.isPermanent(i)}
             isHighlighted={isHighlighted}
             isContradicting={isContradicting}
