@@ -102,13 +102,6 @@ export type Groupings = SquareAddress[][];
  */
 export type Contradictions = Set<SquareAddress>;
 
-interface Instance {
-    previousInstance: Instance | null;
-    markingMap: Map<SquareAddress, Set<SquareValue>>;
-    values: Values;
-    nextInstance: Instance | null;
-}
-
 /**
  * @interface shape of Board.state
  *
@@ -121,18 +114,6 @@ interface Instance {
  * @property {Instance} instance
  *      Double linked list that enables history management such as undo and redo
  *      functionality.
- *      @child {Instance | null} previousInstance
- *          A reference to the previous Instance. Used in undo functionality.
- *      @child {Map<SquareAddress, Set<SquareValue>>} markingMap
- *          A mapping of each Square Component's SquareAddress to its
- *          corresponding Set of markings. The contents of the Set of markings
- *          are accordingly rendered in the correct positions.
- *      @child {Map<SquareAddress, SquareValue>} values
- *          A mapping of each Square Component's SquareAddress to its
- *          corresponding value.
- *      @child {Instance | null} nextInstance
- *          A reference to the next Instance, only exist after undo and before a
- *          new update is made. Used in redo functionality.
  * @property {Set<SquareAddress>} mouseOverHighlighting
  *      Set of currently selected Square components, are all colored accordingly.
  * @property {boolean} multiStrokeHighlighting
@@ -150,9 +131,42 @@ interface BoardState {
     numpadMode: NumberMode;
 }
 
+/**
+ * @interface shape of Board.props
+ *
+ * @property {Array<SquareValue | null>} permanentValues
+ *      Array of size 81 of initial values for sudoku board. Elements are null if
+ *      they are not a permanent values
+ * @property {Groupings} groupings
+ *      List of groupings of Squares. Each grouping determines which elements are
+ *      in each box in the sudoku board.
+ */
 interface BoardProps {
     permanentValues: Array<SquareValue | null>;
     groupings: Groupings;
+}
+
+/**
+ * @interface Doubly linked list that enables history management such as undo and
+ *      redo functionality.
+ *      @child {Instance | null} previousInstance
+ *          A reference to the previous Instance. Used in undo functionality.
+ *      @child {Map<SquareAddress, Set<SquareValue>>} markingMap
+ *          A mapping of each Square Component's SquareAddress to its
+ *          corresponding Set of markings. The contents of the Set of markings
+ *          are accordingly rendered in the correct positions.
+ *      @child {Map<SquareAddress, SquareValue>} values
+ *          A mapping of each Square Component's SquareAddress to its
+ *          corresponding value.
+ *      @child {Instance | null} nextInstance
+ *          A reference to the next Instance, only exist after undo and before a
+ *          new update is made. Used in redo functionality.
+ */
+interface Instance {
+    previousInstance: Instance | null;
+    markingMap: Map<SquareAddress, Set<SquareValue>>;
+    values: Values;
+    nextInstance: Instance | null;
 }
 
 class Board extends React.Component<BoardProps, BoardState> {
