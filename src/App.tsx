@@ -313,34 +313,38 @@ class Board extends React.Component<BoardProps, BoardState> {
         this.setState(newState);
     }
 
-    public updateHistory(currentState: BoardState): BoardState {
-        const newState = _.cloneDeep(currentState);
+    /**
+     * @function updateHistory({BoardState}): {BoardState}
+     *      Is called when a change is made to markingMap or values. Creates
+     *      a new Instance with the new markingMap and values. Handles basic
+     *      linked list adding functionality. Sets newly created Instance
+     *      as the Board.instance and sets it as state.
+     * @param newState
+     *      The BoardState with the changed markingMap or values.
+     */
+    public updateHistory(newState: BoardState): BoardState {
+        const updatedHistoryState = _.cloneDeep(newState);
         const oldState = _.cloneDeep(this.state);
         const oldInstance = oldState.instance;
-        console.log("old: " + Array.from(oldInstance.values.entries()));
         const instanceToAdd: Instance = {
-            markingMap: currentState.instance.markingMap,
+            markingMap: newState.instance.markingMap,
             nextInstance: null,
             previousInstance: oldInstance,
-            values: currentState.instance.values,
+            values: newState.instance.values,
         };
-        console.log("new: " + Array.from(instanceToAdd.values.entries()));
         if (_.isEqual(instanceToAdd.values, oldInstance.values) &&
             _.isEqual(instanceToAdd.markingMap, oldInstance.markingMap)) {
-            return newState;
+            return updatedHistoryState;
         }
         oldState.instance.nextInstance = instanceToAdd;
         this.setState(oldState);
-        newState.instance = instanceToAdd;
-        /*newState.historyIndex = currentState.historyIndex + 1;
-        // On any history update the future history must be
-        // deleted because it is no longer the future of the
-        // new current (watch Back to the Future)
-        newState.history.splice(newState.historyIndex, currentState.history.length);
-        newState.history.push(instanceToAdd);*/
-        return newState;
+        updatedHistoryState.instance = instanceToAdd;
+        return updatedHistoryState;
     }
 
+    /**
+     * Sets the Board.state.instance to the previous one in the linked list.
+     */
     public undo(): void {
         const newState = _.cloneDeep(this.state);
         if (newState.instance.previousInstance === null) {
@@ -350,6 +354,9 @@ class Board extends React.Component<BoardProps, BoardState> {
         this.setState(newState);
     }
 
+    /**
+     * Sets the Board.state.instance to the next one in the linked list.
+     */
     public redo(): void {
         const newState = _.cloneDeep(this.state);
         if (newState.instance.nextInstance === null) {
@@ -359,6 +366,9 @@ class Board extends React.Component<BoardProps, BoardState> {
         this.setState(newState);
     }
 
+    /**
+     * Sets Board.state to initial values. Used when restart button is clicked.
+     */
     public restart(): void {
         const reset = window.confirm("Are you sure you would like to restart? All saved progress will be lost.");
         if (reset) {
