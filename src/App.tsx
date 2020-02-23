@@ -1,9 +1,8 @@
 import Button, {ButtonProps} from "@material-ui/core/Button";
+import * as _ from "lodash";
 import React, {KeyboardEvent, RefObject, SyntheticEvent} from "react";
 import "./App.css";
-
-// tslint:disable-next-line:no-var-requires
-const _ = require("lodash");
+import * as Validate from "./Types";
 
 const KEY_DELETE = 8;
 const KEY_TAB = 9;
@@ -60,11 +59,48 @@ const App: React.FC = () => {
     );
 };
 
-type SquareAddress = number;
+/**
+ * @type {number} SquareAddress
+ *      A number ranging between 0 and 80 which represents a Square's position in
+ *      the sudoku board.
+ */
+export type SquareAddress = number;
 
-type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
+/**
+ * @type {1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9} SquareValue
+ *      A number ranging between 0 and 9 which represents the value of a Square
+ *      in the sudoku board.
+ */
+export type SquareValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 
-type NumberMode = "normal" | "corner";
+/**
+ * @type {"normal" | "corner"} NumberMode
+ *      Determines whether the number buttons will fill in a Square's value or
+ *      its corner marking.
+ */
+export type NumberMode = "normal" | "corner";
+
+/**
+ * @type {Map<SquareAddress, SquareValue>} Values
+ *      A mapping of each Square Component's SquareAddress to its corresponding
+ *      value.
+ */
+export type Values = Map<SquareAddress, SquareValue>;
+
+/**
+ * @type {SquareAddress[][]} Groupings
+ *      List of groupings of Squares. Each grouping determines which elements are
+ *      in each box in the sudoku board.
+ */
+export type Groupings = SquareAddress[][];
+
+/**
+ * @type {Set<SquareAddress>} Contradictions
+ *      A set of square addresses corresponding to the Square's which contradict
+ *      with each other. A contradiction occurs when two squares with the same
+ *      value appear in the same row, column, or group.
+ */
+export type Contradictions = Set<SquareAddress>;
 
 /**
  * @interface shape of Board.state
@@ -91,18 +127,18 @@ type NumberMode = "normal" | "corner";
  *      value.
  */
 interface BoardState {
-    contradicts: Set<SquareAddress>;
+    contradicts: Contradictions;
     highlights: Set<SquareAddress>;
     markingMap: Map<SquareAddress, Set<SquareValue>>;
     mouseOverHighlighting: boolean;
     multiStrokeHighlighting: boolean;
     numpadMode: NumberMode;
-    values: Map<SquareAddress, SquareValue>;
+    values: Values;
 }
 
 interface BoardProps {
     permanentValues: Array<SquareValue | null>;
-    groupings: SquareAddress[][];
+    groupings: Groupings;
 }
 
 class Board extends React.Component<BoardProps, BoardState> {
@@ -127,6 +163,45 @@ class Board extends React.Component<BoardProps, BoardState> {
         if (this.screenRef.current !== null) {
             this.screenRef.current.focus();
         }
+    }
+
+    public consolidateAllValues(): Values {
+        const map: Values = new Map();
+        for (let i = 0; i < 81; i++) {
+            if (this.isPermanent(i)) {
+                map.set(i, this.props.permanentValues[i] as SquareValue);
+            } else {
+                map.set(i, this.state.values.get(i) as SquareValue);
+            }
+        }
+        return map;
+    }
+
+    public updateContradictions() {
+        const allValues = this.consolidateAllValues();
+        const newContradictions = Validate.normalSudokuValidator(allValues);
+        const newState = _.cloneDeep(this.state);
+        newState.contradicts = newContradictions;
+        this.setState(newState, this.contradictionAlert);
+    }
+
+    public contradictionAlert() {
+        if (this.state.contradicts.size > 0) {
+            alert("Sorry :/ There are some errors.");
+        } else if (this.isFilled()) {
+            alert("C O N G R A D U L A T I O N S ! ! !");
+        } else {
+            alert("No errors! Keep going!");
+        }
+    }
+
+    public isFilled(): boolean {
+        for (let i = 0; i < 81; i++) {
+            if (!this.isPermanent(i) && !this.state.values.has(i)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public toggleNumpadMode() {
@@ -157,7 +232,7 @@ class Board extends React.Component<BoardProps, BoardState> {
             }
             const marks = newState.markingMap.has(address) ?
                 newState.markingMap.get(address) as Set<SquareValue> :
-                new Set();
+                new Set<SquareValue>();
             if (marks.has(i)) {
                 marks.delete(i);
             } else {
@@ -328,7 +403,9 @@ class Board extends React.Component<BoardProps, BoardState> {
                             </EventPreventingButton>
                             <EventPreventingButton
                                 variant="contained"
-                                color="secondary">
+                                color="secondary"
+                                onClick={() => {this.updateContradictions(); }}
+                            >
                                 C H E C K
                             </EventPreventingButton>
                         </div>
