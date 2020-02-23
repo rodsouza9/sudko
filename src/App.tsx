@@ -169,20 +169,22 @@ interface Instance {
     nextInstance: Instance | null;
 }
 
+const initialBoardState: BoardState = {
+    contradicts: new Set(),
+    highlights: new Set(),
+    instance: {
+        markingMap: new Map(),
+        nextInstance: null,
+        previousInstance: null,
+        values: new Map(),
+    },
+    mouseOverHighlighting: false,
+    multiStrokeHighlighting: false,
+    numpadMode: "normal",
+};
+
 class Board extends React.Component<BoardProps, BoardState> {
-    public state: BoardState = {
-        contradicts: new Set(),
-        highlights: new Set(),
-        instance: {
-            markingMap: new Map(),
-            nextInstance: null,
-            previousInstance: null,
-            values: new Map(),
-        },
-        mouseOverHighlighting: false,
-        multiStrokeHighlighting: false,
-        numpadMode: "normal",
-    };
+    public state: BoardState = _.cloneDeep(initialBoardState);
 
     private screenRef: RefObject<HTMLDivElement>;
 
@@ -372,19 +374,7 @@ class Board extends React.Component<BoardProps, BoardState> {
     public restart(): void {
         const reset = window.confirm("Are you sure you would like to restart? All saved progress will be lost.");
         if (reset) {
-            const newState: BoardState = {
-                contradicts: new Set(),
-                highlights: new Set(),
-                instance: {
-                    markingMap: new Map(),
-                    nextInstance: null,
-                    previousInstance: null,
-                    values: new Map(),
-                },
-                mouseOverHighlighting: false,
-                multiStrokeHighlighting: false,
-                numpadMode: "normal",
-            };
+            const newState: BoardState = _.cloneDeep(initialBoardState);
             this.setState(newState);
         }
     }
