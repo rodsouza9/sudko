@@ -111,10 +111,9 @@ export type Contradictions = Set<SquareAddress>;
  * @property {boolean} highlighting
  *      True when mouse is held down over Square components. Determines whether
  *      to add Squares hovered over to Board.state.highlights.
- * @property {Map<SquareAddress, Set<SquareValue>>} markingMap
- *      A mapping of each Square Component's SquareAddress to its corresponding
- *      Set of markings. The contents of the Set of markings are accordingly
- *      rendered in the correct positions.
+ * @property {Instance} instance
+ *      Double linked list that enables history management such as undo and redo
+ *      functionality.
  * @property {Set<SquareAddress>} mouseOverHighlighting
  *      Set of currently selected Square components, are all colored accordingly.
  * @property {boolean} multiStrokeHighlighting
@@ -122,35 +121,70 @@ export type Contradictions = Set<SquareAddress>;
  * @property {NumberMode} numpadMode
  *      Can either be in "normal" or "corner" mode. Determines whether the numpad
  *      buttons add a marking or a value to the Square Component.
- * @property {Map<SquareAddress, SquareValue>} values
- *      A mapping of each Square Component's SquareAddress to its corresponding
- *      value.
  */
 interface BoardState {
     contradicts: Contradictions;
     highlights: Set<SquareAddress>;
-    markingMap: Map<SquareAddress, Set<SquareValue>>;
+    instance: Instance;
     mouseOverHighlighting: boolean;
     multiStrokeHighlighting: boolean;
     numpadMode: NumberMode;
-    values: Values;
 }
 
+/**
+ * @interface shape of Board.props
+ *
+ * @property {Array<SquareValue | null>} permanentValues
+ *      Array of size 81 of initial values for sudoku board. Elements are null if
+ *      they are not a permanent values
+ * @property {Groupings} groupings
+ *      List of groupings of Squares. Each grouping determines which elements are
+ *      in each box in the sudoku board.
+ */
 interface BoardProps {
     permanentValues: Array<SquareValue | null>;
     groupings: Groupings;
 }
 
-class Board extends React.Component<BoardProps, BoardState> {
-    public state: BoardState = {
-        contradicts: new Set([38]),
-        highlights: new Set([37]),
+/**
+ * @interface Doubly linked list that enables history management such as undo and
+ *      redo functionality.
+ *      @child {Instance | null} previousInstance
+ *          A reference to the previous Instance. Used in undo functionality.
+ *      @child {Map<SquareAddress, Set<SquareValue>>} markingMap
+ *          A mapping of each Square Component's SquareAddress to its
+ *          corresponding Set of markings. The contents of the Set of markings
+ *          are accordingly rendered in the correct positions.
+ *      @child {Map<SquareAddress, SquareValue>} values
+ *          A mapping of each Square Component's SquareAddress to its
+ *          corresponding value.
+ *      @child {Instance | null} nextInstance
+ *          A reference to the next Instance, only exist after undo and before a
+ *          new update is made. Used in redo functionality.
+ */
+interface Instance {
+    previousInstance: Instance | null;
+    markingMap: Map<SquareAddress, Set<SquareValue>>;
+    values: Values;
+    nextInstance: Instance | null;
+}
+
+const initialBoardState: BoardState = {
+    contradicts: new Set(),
+    highlights: new Set(),
+    instance: {
         markingMap: new Map(),
-        mouseOverHighlighting: false,
-        multiStrokeHighlighting: false,
-        numpadMode: "normal",
+        nextInstance: null,
+        previousInstance: null,
         values: new Map(),
-    };
+    },
+    mouseOverHighlighting: false,
+    multiStrokeHighlighting: false,
+    numpadMode: "normal",
+};
+
+class Board extends React.Component<BoardProps, BoardState> {
+    public state: BoardState = _.cloneDeep(initialBoardState);
 
     private screenRef: RefObject<HTMLDivElement>;
 
@@ -171,7 +205,7 @@ class Board extends React.Component<BoardProps, BoardState> {
             if (this.isPermanent(i)) {
                 map.set(i, this.props.permanentValues[i] as SquareValue);
             } else {
-                map.set(i, this.state.values.get(i) as SquareValue);
+                map.set(i, this.state.instance.values.get(i) as SquareValue);
             }
         }
         return map;
@@ -197,7 +231,7 @@ class Board extends React.Component<BoardProps, BoardState> {
 
     public isFilled(): boolean {
         for (let i = 0; i < 81; i++) {
-            if (!this.isPermanent(i) && !this.state.values.has(i)) {
+            if (!this.isPermanent(i) && !this.state.instance.values.has(i)) {
                 return false;
             }
         }
@@ -215,31 +249,33 @@ class Board extends React.Component<BoardProps, BoardState> {
     }
 
     public normalMarkSelectedSquares(i: SquareValue) {
-        const newState = _.cloneDeep(this.state);
+        let newState = _.cloneDeep(this.state);
         for (const address of this.state.highlights) {
             if (!this.isPermanent(address)) {
-                newState.values.set(address, i);
+                newState.instance.values.set(address, i);
             }
         }
+        newState = this.updateHistory(newState);
         this.setState(newState);
     }
 
     public cornerMarkSelectedSquares(i: SquareValue) {
-        const newState = _.cloneDeep(this.state);
+        let newState = _.cloneDeep(this.state);
         for (const address of this.state.highlights) {
-            if (this.isPermanent(address) || this.state.values.has(address)) {
+            if (this.isPermanent(address) || this.state.instance.values.has(address)) {
                 continue;
             }
-            const marks = newState.markingMap.has(address) ?
-                newState.markingMap.get(address) as Set<SquareValue> :
-                new Set<SquareValue>();
+            const marks = newState.instance.markingMap.has(address) ?
+                newState.instance.markingMap.get(address) as Set<SquareValue> :
+                new Set() as Set<SquareValue>;
             if (marks.has(i)) {
                 marks.delete(i);
             } else {
                 marks.add(i);
             }
-            newState.markingMap.set(address, marks);
+            newState.instance.markingMap.set(address, marks);
         }
+        newState = this.updateHistory(newState);
         this.setState(newState);
     }
 
@@ -247,10 +283,10 @@ class Board extends React.Component<BoardProps, BoardState> {
      * onClick for DELETE button
      */
     public deleteSelectedSquares(): void {
-        const newState = _.cloneDeep(this.state);
+        let newState = _.cloneDeep(this.state);
         let deleteValues: boolean = false; // Determine weather to delete all values or delete all markings
         for (const address of this.state.highlights) {
-            if (!this.isPermanent(address) && newState.values.has(address)) {
+            if (!this.isPermanent(address) && newState.instance.values.has(address)) {
                 deleteValues = true;
                 break;
             }
@@ -260,11 +296,12 @@ class Board extends React.Component<BoardProps, BoardState> {
                 continue;
             }
             if (deleteValues) {
-                newState.values.delete(address);
+                newState.instance.values.delete(address);
             } else {
-                newState.markingMap.set(address, new Set());
+                newState.instance.markingMap.set(address, new Set());
             }
         }
+        newState = this.updateHistory(newState);
         this.setState(newState);
     }
 
@@ -276,6 +313,70 @@ class Board extends React.Component<BoardProps, BoardState> {
         newState.mouseOverHighlighting = false;
         newState.highlights = new Set<SquareAddress>();
         this.setState(newState);
+    }
+
+    /**
+     * @function updateHistory({BoardState}): {BoardState}
+     *      Is called when a change is made to markingMap or values. Creates
+     *      a new Instance with the new markingMap and values. Handles basic
+     *      linked list adding functionality. Sets newly created Instance
+     *      as the Board.instance and sets it as state.
+     * @param newState
+     *      The BoardState with the changed markingMap or values.
+     */
+    public updateHistory(newState: BoardState): BoardState {
+        const updatedHistoryState = _.cloneDeep(newState);
+        const oldState = _.cloneDeep(this.state);
+        const oldInstance = oldState.instance;
+        const instanceToAdd: Instance = {
+            markingMap: newState.instance.markingMap,
+            nextInstance: null,
+            previousInstance: oldInstance,
+            values: newState.instance.values,
+        };
+        if (_.isEqual(instanceToAdd.values, oldInstance.values) &&
+            _.isEqual(instanceToAdd.markingMap, oldInstance.markingMap)) {
+            return updatedHistoryState;
+        }
+        oldState.instance.nextInstance = instanceToAdd;
+        this.setState(oldState);
+        updatedHistoryState.instance = instanceToAdd;
+        return updatedHistoryState;
+    }
+
+    /**
+     * Sets the Board.state.instance to the previous one in the linked list.
+     */
+    public undo(): void {
+        const newState = _.cloneDeep(this.state);
+        if (newState.instance.previousInstance === null) {
+            return;
+        }
+        newState.instance = _.cloneDeep(newState.instance.previousInstance);
+        this.setState(newState);
+    }
+
+    /**
+     * Sets the Board.state.instance to the next one in the linked list.
+     */
+    public redo(): void {
+        const newState = _.cloneDeep(this.state);
+        if (newState.instance.nextInstance === null) {
+            return;
+        }
+        newState.instance = _.cloneDeep(newState.instance.nextInstance);
+        this.setState(newState);
+    }
+
+    /**
+     * Sets Board.state to initial values. Used when restart button is clicked.
+     */
+    public restart(): void {
+        const reset = window.confirm("Are you sure you would like to restart? All saved progress will be lost.");
+        if (reset) {
+            const newState: BoardState = _.cloneDeep(initialBoardState);
+            this.setState(newState);
+        }
     }
 
     public handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -380,6 +481,12 @@ class Board extends React.Component<BoardProps, BoardState> {
                                 onClickMode={() => {
                                     this.toggleNumpadMode();
                                 }}
+                                onClickUndo={() => {
+                                    this.undo();
+                                }}
+                                onClickRedo={() => {
+                                    this.redo();
+                                }}
                                 numpadMode={this.state.numpadMode}
                             />
                             <Numpad
@@ -398,7 +505,8 @@ class Board extends React.Component<BoardProps, BoardState> {
                         <div className="button-box-bot">
                             <EventPreventingButton
                                 variant="contained"
-                                color="primary">
+                                color="primary"
+                                onClick={() => {this.restart(); }}>
                                 R E S T A R T
                             </EventPreventingButton>
                             <EventPreventingButton
@@ -430,12 +538,12 @@ class Board extends React.Component<BoardProps, BoardState> {
     public renderSquare(i: SquareAddress) {
         const isHighlighted = this.state.highlights.has(i);
         const isContradicting = this.state.contradicts.has(i);
-        const marks = this.state.markingMap.has(i) ?
-            this.state.markingMap.get(i) as Set<SquareValue> :
+        const marks = this.state.instance.markingMap.has(i) ?
+            this.state.instance.markingMap.get(i) as Set<SquareValue> :
             new Set() as Set<SquareValue>;
         return <Square
             value={this.isPermanent(i) ? this.props.permanentValues[i] :
-                this.state.values.has(i) ? this.state.values.get(i) as SquareValue : null}
+                this.state.instance.values.has(i) ? this.state.instance.values.get(i) as SquareValue : null}
             isPermanent={this.isPermanent(i)}
             isHighlighted={isHighlighted}
             isContradicting={isContradicting}
@@ -548,6 +656,8 @@ class Numpad extends React.Component<NumpadProps, {}> {
 interface ControlProps {
     numpadMode: NumberMode;
     onClickMode: () => void;
+    onClickUndo: () => void;
+    onClickRedo: () => void;
 }
 
 class ControlButtons extends React.Component<ControlProps, {}> {
@@ -571,11 +681,13 @@ class ControlButtons extends React.Component<ControlProps, {}> {
                     Corner
                 </EventPreventingButton>
                 <EventPreventingButton
+                    onClick={this.props.onClickUndo}
                     className="button"
                     variant="contained">
                     Undo
                 </EventPreventingButton>
                 <EventPreventingButton
+                    onClick={this.props.onClickRedo}
                     className="button"
                     variant="contained">
                     Redo
