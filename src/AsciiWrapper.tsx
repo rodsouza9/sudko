@@ -44,7 +44,7 @@ export class AsciiWrapper extends React.Component<AsciiWrapperProps, AsciiWrappe
     }
 
     public getNewBoard() {
-        const newValues = asciiToArray(asciiBoards[0]);
+        const newValues = asciiToArray(asciiBoards[Math.floor(Math.random() * asciiBoards.length)]);
         const newState = _.cloneDeep(this.state);
         newState.permanentValues = newValues;
         this.setState(newState);
