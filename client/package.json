@@ -1,0 +1,49 @@
+{
+  "name": "sudko1",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.8.1",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.4.0",
+    "@testing-library/user-event": "^7.2.1",
+    "@types/express": "^4.17.6",
+    "@types/jest": "^24.0.24",
+    "@types/lodash": "^4.14.149",
+    "@types/node": "^12.12.42",
+    "@types/react": "^16.9.17",
+    "@types/react-dom": "^16.9.4",
+    "express": "^4.17.1",
+    "lodash": "^4.17.15",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-scripts": "3.3.0",
+    "ts-node": "^8.10.1"
+  },
+  "scripts": {
+    "start": "PORT=3006 react-scripts start",
+    "build": "../node_modules/.bin/react-scripts client/build",
+    "test": "../node_modules/.bin/jest",
+    "eject": "../node_modules/.bin/react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4"
+  }
+}
