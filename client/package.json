@@ -22,9 +22,9 @@
   },
   "scripts": {
     "start": "PORT=3006 react-scripts start",
-    "build": "../node_modules/.bin/react-scripts client/build",
-    "test": "../node_modules/.bin/jest",
-    "eject": "../node_modules/.bin/react-scripts eject"
+    "build": "node_modules/.bin/react-scripts client/build",
+    "test": "node_modules/.bin/jest",
+    "eject": "node_modules/.bin/react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
