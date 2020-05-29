@@ -1,7 +1,8 @@
-import React from "react";
-import {NORMAL_GROUPS, Board, SquareValue} from "./Types";
 import {Button} from "@material-ui/core";
 import * as _ from "lodash";
+import React from "react";
+import {DateButton} from "./components/DateButton";
+import {Board, NORMAL_GROUPS, SquareValue} from "./Types";
 /*
 +-----+-----+-----+
 |5    |  8  |  4 9|
@@ -62,6 +63,7 @@ export class AsciiWrapper extends React.Component<AsciiWrapperProps, AsciiWrappe
                     color={"primary"}>
                     Get New Puzzle
                 </Button>
+                <DateButton/>
                 <Board
                     permanentValues={this.state.permanentValues}
                     groupings={NORMAL_GROUPS}
