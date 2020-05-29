@@ -20,7 +20,7 @@ export class DateButton extends React.Component<DateButtonProps, DateButtonState
         console.log(
             fetch("/date")
                 .then( (res) => res.text())
-                .then( (date) => console.log(date)),
+                .then( (date) => this.setState({date})),
         );
     }
 
