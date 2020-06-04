@@ -112,6 +112,7 @@
     border-style: solid;
     border-width: 1px;
     border-color: #c2c2cc;
+    display: grid;
     grid-template: 1fr 1fr 1fr / 1fr 1fr 1fr;
     grid-template-areas:
         "1 2 3"
@@ -122,15 +123,11 @@
 }
 
 .mark {
-    border: thin solid red;
-    font-size: 0.3em;
+    font-size: 0.4em;
+    font-weight: lighter;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.mark-1 {
-    grid-area: 2;
 }
 
 

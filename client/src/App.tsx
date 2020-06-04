@@ -566,7 +566,7 @@ class Square extends React.Component<SquareProps, {}> {
         }
         const list = [];
         for (let i = 0; i < 9; i++) {
-            list.push(<div className="mark">{marks[i] == null ? "1" : marks[i]}</div>);
+            list.push(<div className="mark">{marks[i] == null ? " " : marks[i]}</div>);
         }
         return list;
     }
@@ -581,7 +581,7 @@ class Square extends React.Component<SquareProps, {}> {
         const squareClassName: string = displayMarkings ? "square-with-marks" : "square";
         return (
             <div
-                className={"square " + light + " " + permanent}
+                className={squareClassName + " " + light + " " + permanent}
                 onMouseDown={
                     (event) => {
                         this.props.onMouseDown(event as unknown as MouseEvent);
