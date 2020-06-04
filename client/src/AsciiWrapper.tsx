@@ -53,7 +53,7 @@ export class AsciiWrapper extends React.Component<AsciiWrapperProps, AsciiWrappe
 
     public render() {
         return (
-            <div className={"ascii"}>
+            <div className="ascii">
                 <Button
                     className={"ascii-button"}
                     onClick={() => {this.getNewBoard(); }}

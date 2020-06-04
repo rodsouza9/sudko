@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import React, {KeyboardEvent, RefObject, SyntheticEvent} from "react";
 import "./App.css";
 import * as Validate from "./Types";
-import {AsciiWrapper} from "./Types";
+import {AsciiWrapper, NORMAL_GROUPS} from "./Types";
 
 const KEY_DELETE = 8;
 const KEY_TAB = 9;
@@ -38,11 +38,12 @@ const App: React.FC = () => {
     return (
         <div className="App">
             <header className="App-header">
-                <AsciiWrapper/>
-                {/*<Board
+                {// <AsciiWrapper/>
+                }
+                <Board
                     permanentValues={vals}
-                    groupings={groups}
-                />*/}
+                    groupings={NORMAL_GROUPS}
+                />
             </header>
         </div>
     );
@@ -463,6 +464,7 @@ class Board extends React.Component<BoardProps, BoardState> {
                 }}
                 tabIndex={0}>
                 <div className="game">
+                <div className="game-inside">
                     <div className="board">{this.renderSquares()}</div>
                     <div className="button-box">
                         <div className="button-box-top">
@@ -507,6 +509,7 @@ class Board extends React.Component<BoardProps, BoardState> {
                             </EventPreventingButton>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         );
@@ -563,7 +566,7 @@ class Square extends React.Component<SquareProps, {}> {
         }
         const list = [];
         for (let i = 0; i < 9; i++) {
-            list.push(<div className="mark">{marks[i]}</div>);
+            list.push(<div className="mark">{marks[i] == null ? "1" : marks[i]}</div>);
         }
         return list;
     }
@@ -575,6 +578,7 @@ class Square extends React.Component<SquareProps, {}> {
             this.props.markings.size !== 0 &&
             !this.props.isPermanent &&
             !this.props.value;
+        const squareClassName: string = displayMarkings ? "square-with-marks" : "square";
         return (
             <div
                 className={"square " + light + " " + permanent}
