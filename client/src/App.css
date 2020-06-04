@@ -132,13 +132,44 @@
 
 
 .button-box {
-    width: 40%;
-    border-style: solid;
-    border-width: 1px;
-    border-color: yellow;
+    border: medium solid darkseagreen;
+    height: 100%;
+    width: calc((35/80) *100%);
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.button-container {
+    border: medium solid burlywood;
+    height: 55%;
+    width: 77%;
+    display: grid;
+    grid-template: 1fr 1fr 1fr 1fr / 1.2fr 1fr 1fr 1fr;
+    grid-template-areas:
+            "controls numpad  numpad  numpad"
+            "controls numpad  numpad  numpad"
+            "controls numpad  numpad  numpad"
+            "footer   footer  footer  footer";
+;
+    font-size: 70%;
+}
+
+.Controls {
+    border: medium solid orange;
+    grid-area: controls;
+    display: grid;
+}
+
+.Numpad {
+    border: medium solid dodgerblue;
+    grid-area: numpad;
+}
+
+.Footer {
+    border: medium solid forestgreen;
+    grid-area: footer;
 }
 
 .button-box-top {

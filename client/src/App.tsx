@@ -1,6 +1,7 @@
-import Button, {ButtonProps} from "@material-ui/core/Button";
+
 import * as _ from "lodash";
 import React, {KeyboardEvent, RefObject, SyntheticEvent} from "react";
+import Button, {ButtonProps} from "react-bootstrap/Button";
 import "./App.css";
 import * as Validate from "./Types";
 import {AsciiWrapper, NORMAL_GROUPS} from "./Types";
@@ -467,7 +468,12 @@ class Board extends React.Component<BoardProps, BoardState> {
                 <div className="game-inside">
                     <div className="board">{this.renderSquares()}</div>
                     <div className="button-box">
-                        <div className="button-box-top">
+                        <div className="button-container">
+                            <div className="Controls"> c</div>
+                            <div className="Numpad"> n</div>
+                            <div className="Footer"> f</div>
+                        </div>
+                        {/*<div className="button-box-top">
                             <ControlButtons
                                 onClickMode={() => {
                                     this.toggleNumpadMode();
@@ -507,7 +513,7 @@ class Board extends React.Component<BoardProps, BoardState> {
                             >
                                 C H E C K
                             </EventPreventingButton>
-                        </div>
+                        </div>*/}
                     </div>
                 </div>
                 </div>
@@ -621,12 +627,13 @@ class Numpad extends React.Component<NumpadProps, {}> {
     }
 
     public renderNumButton(i: SquareValue) {
+        // @ts-ignore
         return <EventPreventingButton
             onClick={(e) => {
                 this.props.numpadMode === "normal" ? this.props.onClickNormal(i) : this.props.onClickCorner(i);
             }}
             className="button-num"
-            variant="contained">
+            variant="primary">
             {i as number}
         </EventPreventingButton>;
     }
@@ -638,7 +645,7 @@ class Numpad extends React.Component<NumpadProps, {}> {
                 <EventPreventingButton
                     onClick={this.props.onClickDel}
                     className="button"
-                    variant="contained">
+                    variant="primary">
                     DELETE
                 </EventPreventingButton>
             </div>
@@ -662,7 +669,7 @@ class ControlButtons extends React.Component<ControlProps, {}> {
                     }}
                     className="button"
                     color={this.props.numpadMode !== "normal" ? "default" : "primary"}
-                    variant="contained">
+                    variant="primary">
                     Normal
                 </EventPreventingButton>
                 <EventPreventingButton
@@ -670,19 +677,19 @@ class ControlButtons extends React.Component<ControlProps, {}> {
                     }}
                     className="button"
                     color={this.props.numpadMode !== "corner" ? "default" : "primary"}
-                    variant="contained">
+                    variant="primary">
                     Corner
                 </EventPreventingButton>
                 <EventPreventingButton
                     onClick={this.props.onClickUndo}
                     className="button"
-                    variant="contained">
+                    variant="primary">
                     Undo
                 </EventPreventingButton>
                 <EventPreventingButton
                     onClick={this.props.onClickRedo}
                     className="button"
-                    variant="contained">
+                    variant="primary">
                     Redo
                 </EventPreventingButton>
             </div>
