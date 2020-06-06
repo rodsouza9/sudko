@@ -469,7 +469,20 @@ class Board extends React.Component<BoardProps, BoardState> {
                     <div className="board">{this.renderSquares()}</div>
                     <div className="button-box">
                         <div className="button-container">
-                            <div className="Controls"> c</div>
+                            <div className="Controls">
+                                <ControlButtons
+                                    onClickMode={() => {
+                                        this.toggleNumpadMode();
+                                    }}
+                                    onClickUndo={() => {
+                                        this.undo();
+                                    }}
+                                    onClickRedo={() => {
+                                        this.redo();
+                                    }}
+                                    numpadMode={this.state.numpadMode}
+                                />
+                            </div>
                             <div className="Numpad"> n</div>
                             <div className="Footer"> f</div>
                         </div>
@@ -572,7 +585,7 @@ class Square extends React.Component<SquareProps, {}> {
         }
         const list = [];
         for (let i = 0; i < 9; i++) {
-            list.push(<div className="mark">{marks[i] == null ? " " : marks[i]}</div>);
+            list.push(<div className="corner-mark">{marks[i] == null ? " " : marks[i]}</div>);
         }
         return list;
     }
@@ -699,6 +712,7 @@ class ControlButtons extends React.Component<ControlProps, {}> {
 
 const defaultPreventingListener = (event: SyntheticEvent) => { event.preventDefault(); };
 
+// @ts-ignore
 /**
  * event.preventDefault is called to ensure that
  * handleGlobalMouseDown does not run when this
@@ -708,7 +722,8 @@ const defaultPreventingListener = (event: SyntheticEvent) => { event.preventDefa
  * handleGlobalMouseUp does not run when this
  * button is clicked.
  */
-class EventPreventingButton extends React.Component<ButtonProps, {}> {
+class EventPreventingButton extends React.Component<ButtonProps &
+    React.PropsWithoutRef<JSX.IntrinsicElements["button"]>, {}> {
     public render() {
         return (
             <Button

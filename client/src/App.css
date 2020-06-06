@@ -106,6 +106,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    font-weight: 400;
+    color: royalblue;
+    line-height: 0;
+    letter-spacing: 0;
 }
 
 .square-with-marks {
@@ -120,14 +124,17 @@
         "7 8 9"
     ;
     justify-items: stretch;
+    letter-spacing: 0px;
 }
 
-.mark {
-    font-size: 0.4em;
+.corner-mark {
+    font-size: 1vw;
     font-weight: lighter;
+    line-height: 0;
     display: flex;
     justify-content: center;
     align-items: center;
+    color: royalblue;
 }
 
 
@@ -162,6 +169,16 @@
     display: grid;
 }
 
+.button-col {
+    border-style: solid;
+    border-width: 1px;
+    border-color: white;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
 .Numpad {
     border: medium solid dodgerblue;
     grid-area: numpad;
@@ -182,16 +199,7 @@
     justify-content: flex-start;
 }
 
-.button-col {
-    width: 30%;
-    border-style: solid;
-    border-width: 1px;
-    border-color: white;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-    align-items: center;
-}
+
 
 .button-num-pad {
     width: 70%;
@@ -235,5 +243,6 @@
 
 .permanent {
     font-weight: bold;
+    color: black;
 }
 

@@ -1,7 +1,7 @@
-import React from "react";
-import {NORMAL_GROUPS, Board, SquareValue} from "./Types";
-import {Button} from "@material-ui/core";
 import * as _ from "lodash";
+import React from "react";
+import Button from "react-bootstrap/Button";
+import {Board, NORMAL_GROUPS, SquareValue} from "./Types";
 /*
 +-----+-----+-----+
 |5    |  8  |  4 9|
@@ -57,8 +57,8 @@ export class AsciiWrapper extends React.Component<AsciiWrapperProps, AsciiWrappe
                 <Button
                     className={"ascii-button"}
                     onClick={() => {this.getNewBoard(); }}
-                    variant="contained"
-                    size={"large"}
+                    variant="primary"
+                    size={"lg"}
                     color={"primary"}>
                     Get New Puzzle
                 </Button>
