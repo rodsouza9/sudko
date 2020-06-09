@@ -3,11 +3,9 @@ import * as _ from "lodash";
 import React, {KeyboardEvent, RefObject, SyntheticEvent} from "react";
 import Button, {ButtonProps} from "react-bootstrap/Button";
 import "./App.css";
+import {Menubar} from "./components/Menubar";
 import * as Validate from "./Types";
 import {AsciiWrapper, NORMAL_GROUPS} from "./Types";
-import Navbar from "react-bootstrap/Navbar";
-import Nav from "react-bootstrap/Nav";
-import NavDropdown from "react-bootstrap/NavDropdown";
 
 const KEY_DELETE = 8;
 const KEY_TAB = 9;
@@ -41,26 +39,8 @@ const App: React.FC = () => {
 
     return (
         <div className="App">
-            <Navbar className="Navbar" bg="light" expand="sm" sticky="top">
-                <Navbar.Brand href="#home">SUDKO</Navbar.Brand>
-                <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                <Navbar.Collapse id="basic-navbar-nav">
-                    <Nav className="mr-auto">
-                        <Nav.Link href="#home">Home</Nav.Link>
-                        <Nav.Link href="#link">Link</Nav.Link>
-                        <NavDropdown title="Dropdown" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-                            <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
-                            <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
-                            <NavDropdown.Divider />
-                            <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
-                </Navbar.Collapse>
-            </Navbar>
+            <Menubar/>
             <header className="App-header">
-                {// <AsciiWrapper/>
-                }
                 <Board
                     permanentValues={vals}
                     groupings={NORMAL_GROUPS}
