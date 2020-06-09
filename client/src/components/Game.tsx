@@ -12,6 +12,7 @@ import {
     Numpad,
     Square,
 } from "../Types";
+import "./Game.css";
 
 /**
  * @type {number} SquareAddress

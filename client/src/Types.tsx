@@ -3,6 +3,10 @@ export * from "./App";
 export * from "./AsciiWrapper";
 export * from "./components/Menubar";
 export * from "./components/Game";
+export * from "./components/Numpad";
+export * from "./components/Square";
+export * from "./components/ControlButtons";
+export * from "./components/EventPreventingButton";
 
 const NORMAL_GROUPS =
     [
