@@ -1,4 +1,4 @@
-import App, {SquareValue} from "./App";
+import {SquareValue} from "./Types";
 import {Contradictions, Groupings, SquareAddress, Values} from "./Types";
 import * as Validate from "./Validate";
 

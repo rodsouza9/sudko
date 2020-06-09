@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import React from "react";
 import Button from "react-bootstrap/Button";
-import {Board, NORMAL_GROUPS, SquareValue} from "./Types";
+import {Game, NORMAL_GROUPS, SquareValue} from "./Types";
 /*
 +-----+-----+-----+
 |5    |  8  |  4 9|
@@ -62,7 +62,7 @@ export class AsciiWrapper extends React.Component<AsciiWrapperProps, AsciiWrappe
                     color={"primary"}>
                     Get New Puzzle
                 </Button>
-                <Board
+                <Game
                     permanentValues={this.state.permanentValues}
                     groupings={NORMAL_GROUPS}
                 />
