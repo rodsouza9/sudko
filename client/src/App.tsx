@@ -5,6 +5,9 @@ import Button, {ButtonProps} from "react-bootstrap/Button";
 import "./App.css";
 import * as Validate from "./Types";
 import {AsciiWrapper, NORMAL_GROUPS} from "./Types";
+import Navbar from "react-bootstrap/Navbar";
+import Nav from "react-bootstrap/Nav";
+import NavDropdown from "react-bootstrap/NavDropdown";
 
 const KEY_DELETE = 8;
 const KEY_TAB = 9;
@@ -38,6 +41,23 @@ const App: React.FC = () => {
 
     return (
         <div className="App">
+            <Navbar className="Navbar" bg="light" expand="sm" sticky="top">
+                <Navbar.Brand href="#home">SUDKO</Navbar.Brand>
+                <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav className="mr-auto">
+                        <Nav.Link href="#home">Home</Nav.Link>
+                        <Nav.Link href="#link">Link</Nav.Link>
+                        <NavDropdown title="Dropdown" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+                            <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
+                            <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
+                            <NavDropdown.Divider />
+                            <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                </Navbar.Collapse>
+            </Navbar>
             <header className="App-header">
                 {// <AsciiWrapper/>
                 }
@@ -469,22 +489,45 @@ class Board extends React.Component<BoardProps, BoardState> {
                     <div className="board">{this.renderSquares()}</div>
                     <div className="button-box">
                         <div className="button-container">
-                            <div className="Controls">
-                                <ControlButtons
-                                    onClickMode={() => {
-                                        this.toggleNumpadMode();
-                                    }}
-                                    onClickUndo={() => {
-                                        this.undo();
-                                    }}
-                                    onClickRedo={() => {
-                                        this.redo();
-                                    }}
-                                    numpadMode={this.state.numpadMode}
-                                />
+                            <ControlButtons
+                                onClickMode={() => {
+                                    this.toggleNumpadMode();
+                                }}
+                                onClickUndo={() => {
+                                    this.undo();
+                                }}
+                                onClickRedo={() => {
+                                    this.redo();
+                                }}
+                                numpadMode={this.state.numpadMode}
+                            />
+                            <Numpad
+                                numpadMode={this.state.numpadMode}
+                                onClickCorner={(i: SquareValue) => {
+                                    this.cornerMarkSelectedSquares(i);
+                                }}
+                                onClickNormal={(i: SquareValue) => {
+                                    this.normalMarkSelectedSquares(i);
+                                }}
+                                onClickDel={() => {
+                                    this.deleteSelectedSquares();
+                                }}
+                            />
+                            <div className="Footer">
+                                <EventPreventingButton
+                                    className="footer-button"
+                                    variant="danger"
+                                    onClick={() => {this.restart(); }}>
+                                    RESTART
+                                </EventPreventingButton>
+                                <EventPreventingButton
+                                    className="footer-button"
+                                    variant="success"
+                                    onClick={() => {this.updateContradictions(); }}
+                                >
+                                    CHECK
+                                </EventPreventingButton>
                             </div>
-                            <div className="Numpad"> n</div>
-                            <div className="Footer"> f</div>
                         </div>
                         {/*<div className="button-box-top">
                             <ControlButtons
@@ -645,7 +688,7 @@ class Numpad extends React.Component<NumpadProps, {}> {
             onClick={(e) => {
                 this.props.numpadMode === "normal" ? this.props.onClickNormal(i) : this.props.onClickCorner(i);
             }}
-            className="button-num"
+            className="number-button"
             variant="primary">
             {i as number}
         </EventPreventingButton>;
@@ -653,11 +696,11 @@ class Numpad extends React.Component<NumpadProps, {}> {
 
     public render() {
         return (
-            <div className="button-num-pad">
+            <div className="Numpad">
                 {this.renderNumButtons()}
                 <EventPreventingButton
                     onClick={this.props.onClickDel}
-                    className="button"
+                    className="delete-button"
                     variant="primary">
                     DELETE
                 </EventPreventingButton>
@@ -676,32 +719,45 @@ interface ControlProps {
 class ControlButtons extends React.Component<ControlProps, {}> {
     public render() {
         return (
-            <div className="button-col">
+            <div className="Controls">
+                <style type="text/css">
+                    {`
+                    .btn-primary, .btn-outline-primary, .btn-success, .btn-danger {
+                        line-height: 0;
+                        display: flex;
+                        flex-direction: row;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        align-items: center;
+                        font-size: 70%;
+                        font-weight: 700;
+                        padding: 0;
+                    }
+                    `}
+                </style>
                 <EventPreventingButton
                     onClick={this.props.numpadMode !== "normal" ? this.props.onClickMode : () => {
                     }}
-                    className="button"
-                    color={this.props.numpadMode !== "normal" ? "default" : "primary"}
-                    variant="primary">
+                    className="control-button"
+                    variant={this.props.numpadMode !== "normal" ? "outline-primary" : "primary"}>
                     Normal
                 </EventPreventingButton>
                 <EventPreventingButton
                     onClick={this.props.numpadMode !== "corner" ? this.props.onClickMode : () => {
                     }}
-                    className="button"
-                    color={this.props.numpadMode !== "corner" ? "default" : "primary"}
-                    variant="primary">
+                    className="control-button"
+                    variant={this.props.numpadMode !== "corner" ? "outline-primary" : "primary"}>
                     Corner
                 </EventPreventingButton>
                 <EventPreventingButton
                     onClick={this.props.onClickUndo}
-                    className="button"
+                    className="control-button"
                     variant="primary">
                     Undo
                 </EventPreventingButton>
                 <EventPreventingButton
                     onClick={this.props.onClickRedo}
-                    className="button"
+                    className="control-button"
                     variant="primary">
                     Redo
                 </EventPreventingButton>
