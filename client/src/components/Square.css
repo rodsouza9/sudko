@@ -1,0 +1,50 @@
+.square {
+    border-style: solid;
+    border-width: 1px;
+    border-color: #c2c2cc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 400;
+    color: royalblue;
+    line-height: 0;
+    letter-spacing: 0;
+}
+
+.square-with-marks {
+    border-style: solid;
+    border-width: 1px;
+    border-color: #c2c2cc;
+    display: grid;
+    grid-template: 1fr 1fr 1fr / 1fr 1fr 1fr;
+    grid-template-areas:
+            "1 2 3"
+            "4 5 6"
+            "7 8 9"
+;
+    justify-items: stretch;
+    letter-spacing: 0px;
+}
+
+.corner-mark {
+    font-size: 1vw;
+    font-weight: lighter;
+    line-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: royalblue;
+}
+
+.highlight {
+    background-color: rgba(250, 241, 170, 0.5);
+}
+
+.contradict {
+    background-color: red;
+}
+
+.permanent {
+    font-weight: bold;
+    color: black;
+}

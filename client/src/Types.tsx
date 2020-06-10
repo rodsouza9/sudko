@@ -1,8 +1,14 @@
 export * from "./Validate";
 export * from "./App";
 export * from "./AsciiWrapper";
+export * from "./components/Menubar";
+export * from "./components/Game";
+export * from "./components/Numpad";
+export * from "./components/Square";
+export * from "./components/ControlButtons";
+export * from "./components/EventPreventingButton";
 
-export const NORMAL_GROUPS =
+const NORMAL_GROUPS =
     [
         [0, 1, 2, 9, 10, 11, 18, 19, 20],
         [3, 4, 5, 12, 13, 14, 21, 22, 23],
@@ -14,3 +20,11 @@ export const NORMAL_GROUPS =
         [57, 58, 59, 66, 67, 68, 75, 76, 77],
         [60, 61, 62, 69, 70, 71, 78, 79, 80],
     ];
+
+const KEY_1 = 49;
+const KEY_9 = 57;
+const KEY_COMMAND = 91;
+const KEY_DELETE = 8;
+const KEY_TAB = 9;
+
+export {KEY_1, KEY_9, KEY_COMMAND, KEY_DELETE, KEY_TAB, NORMAL_GROUPS};
