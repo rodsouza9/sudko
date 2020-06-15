@@ -7,6 +7,8 @@
 
 # testing
 /coverage
+/server/cookie-file.txt
+/server/cookie-file.tx
 
 # production
 /client/build
