@@ -59,7 +59,7 @@ app.use(session({
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: true,
-    maxAge: 10000000000000000
+    maxAge: 9876543210
 }))
 app.use(passport.initialize());
 app.use(passport.session());
