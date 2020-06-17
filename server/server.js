@@ -55,10 +55,11 @@ app.use(session({
         console.log(`Request object sessionID from client: ${req.sessionID}`)
         return uuidv4() // use UUIDs for session IDs
     },
-    store: new FileStore(),
+    store: new FileStore(), // need to be replaced w database
     secret: 'keyboard cat',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    maxAge: 10000000000000000
 }))
 app.use(passport.initialize());
 app.use(passport.session());
