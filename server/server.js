@@ -6,6 +6,10 @@ const express = require('express');
 const path = require('path');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const axios = require('axios');
+
+const HTTP_SERVER = 'http://localhost:5000/';
+const DB_SERVER = 'http://localhost:4000/';
 
 
 // this is
@@ -17,43 +21,42 @@ const users = [
 passport.use(new LocalStrategy(
     { usernameField: 'email' },
     (email, password, done) => {
-        fetch()
-        console.log('Inside local strategy callback')
-        // here is where you make a call to the database
-        // to find the user based on their username or email address
-        // for now, we'll just pretend we found that it was users[0]
-        const user = users[0]
-        // change this to database stuff later
-        if(email === user.email && password === user.password) {
-            console.log('Local strategy returned true')
-            return done(null, user)
-        }
+        // this needs to be changed to use mongo db later
+        axios.get(DB_SERVER + `users?email=${email}`)
+            .then(res => {
+                const user = res.data[0]
+                if (!user) {
+                    return done(null, false, { message: 'Invalid credentials.\n' });
+                }
+                if (password != user.password) {
+                    return done(null, false, { message: 'Invalid credentials.\n' });
+                }
+                return done(null, user);
+            })
+            .catch(error => done(error));
     }
 ));
 // tell passport how to serialize the user
 passport.serializeUser((user, done) => {
-    console.log('Inside serializeUser callback. User id is save to the session file store here')
     done(null, user.id);
 });
 
 passport.deserializeUser((id, done) => {
-    console.log('Inside deserializeUser callback')
-    console.log(`The user id passport saved in the session file store is: ${id}`)
-    const user = users[0].id === id ? users[0] : false;
-    done(null, user);
+    axios.get(DB_SERVER + `users/${id}`)
+        .then(res => done(null, res.data) )
+        .catch(error => done(error, false))
 });
 
 
 // express server
 const app = express();
 
+
 // add & configure middleware
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(session({
     genid: (req) => {
-        console.log('Inside the session middleware genid function')
-        console.log(`Request object sessionID from client: ${req.sessionID}`)
         return uuidv4() // use UUIDs for session IDs
     },
     store: new FileStore(), // need to be replaced w database
@@ -65,36 +68,32 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// set path for routes
 app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'))
 });
 
-// create the login get and post routes
+// Either choose single page style or send login page here
 app.get('/login', (req, res) => {
-    console.log('Inside GET /login callback function')
-    console.log(req.sessionID)
     res.send(`You got the login page!\n`)
 })
 
+// login post route
 app.post('/login', (req, res, next) => {
-    console.log('Inside POST /login callback')
     passport.authenticate('local', (err, user, info) => {
-        console.log('Inside passport.authenticate() callback');
-        console.log(`req.session.passport: ${JSON.stringify(req.session.passport)}`)
-        console.log(`req.user: ${JSON.stringify(req.user)}`)
+        if(info) {return res.send(info.message)}
+        if (err) { return next(err); }
+        if (!user) { return res.redirect('/login'); }
         req.login(user, (err) => {
-            console.log('Inside req.login() callback')
-            console.log(`req.session.passport: ${JSON.stringify(req.session.passport)}`)
-            console.log(`req.user: ${JSON.stringify(req.user)}`)
-            return res.send('You were authenticated & logged in!\n');
+            if (err) { return next(err); }
+            return res.redirect('/authrequired');
         })
     })(req, res, next);
 })
 
 app.get('/authrequired', (req, res) => {
-    console.log('Inside GET /authrequired callback')
     console.log(`User authenticated? ${req.isAuthenticated()}`)
     if(req.isAuthenticated()) {
         res.send('you hit the authentication endpoint\n')
@@ -105,4 +104,4 @@ app.get('/authrequired', (req, res) => {
 
 //listen bruh
 app.listen(5000);
-console.log("This app is running on http://localhost:5000/")
+console.log("This app is running on" + HTTP_SERVER)
