@@ -17,6 +17,7 @@ const users = [
 passport.use(new LocalStrategy(
     { usernameField: 'email' },
     (email, password, done) => {
+        fetch()
         console.log('Inside local strategy callback')
         // here is where you make a call to the database
         // to find the user based on their username or email address
@@ -59,7 +60,7 @@ app.use(session({
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: true,
-    maxAge: 9876543210
+    cookie: {maxAge: 9876543210}
 }))
 app.use(passport.initialize());
 app.use(passport.session());
