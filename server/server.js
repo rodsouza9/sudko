@@ -82,6 +82,7 @@ app.get('/login', (req, res) => {
 
 // login post route
 app.post('/login', (req, res, next) => {
+    console.log("inside /login post")
     passport.authenticate('local', (err, user, info) => {
         if(info) {return res.send(info.message)}
         if (err) { return next(err); }

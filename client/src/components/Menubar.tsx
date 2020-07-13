@@ -1,8 +1,10 @@
 import React from "react";
+import Button from "react-bootstrap/Button";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import "./Menubar.css";
+import {Login} from "./Login";
 
 export class Menubar extends React.Component<{}, {}> {
     public render() {
@@ -22,6 +24,7 @@ export class Menubar extends React.Component<{}, {}> {
                             <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
+                    <Login/>
                 </Navbar.Collapse>
             </Navbar>
         );
