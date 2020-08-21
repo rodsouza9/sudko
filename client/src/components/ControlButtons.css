@@ -1,5 +1,5 @@
 .Controls {
-    border: medium solid orange;
+    /*border: medium solid orange;*/
     grid-area: controls;
     display: grid;
     grid-template: 1fr 1fr 1fr 1fr / 1fr;
