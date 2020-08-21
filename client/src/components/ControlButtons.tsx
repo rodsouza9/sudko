@@ -34,14 +34,14 @@ export class ControlButtons extends React.Component<ControlProps, {}> {
                 <EventPreventingButton
                     onClick={this.props.numpadMode !== "normal" ? this.props.onClickMode : () => {
                     }}
-                    className="control-button"
+                    className={this.props.numpadMode !== "normal" ? "control-button turnoff" : "control-button turnon"}
                     variant={this.props.numpadMode !== "normal" ? "outline-primary" : "primary"}>
                     Normal
                 </EventPreventingButton>
                 <EventPreventingButton
                     onClick={this.props.numpadMode !== "corner" ? this.props.onClickMode : () => {
                     }}
-                    className="control-button"
+                    className= {this.props.numpadMode !== "corner" ? "control-button turnoff" : "control-button turnon"}
                     variant={this.props.numpadMode !== "corner" ? "outline-primary" : "primary"}>
                     Corner
                 </EventPreventingButton>

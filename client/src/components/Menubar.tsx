@@ -3,8 +3,8 @@ import Button from "react-bootstrap/Button";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import "./Menubar.css";
 import {Login} from "./Login";
+import "./Menubar.css";
 
 export class Menubar extends React.Component<{}, {}> {
     public render() {

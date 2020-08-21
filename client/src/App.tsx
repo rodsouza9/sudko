@@ -1,13 +1,9 @@
-import * as _ from "lodash";
-import React, {KeyboardEvent, RefObject, SyntheticEvent} from "react";
-import Button, {ButtonProps} from "react-bootstrap/Button";
+import React from "react";
 import "./App.css";
 import {
-    AsciiWrapper,
     Game,
     Menubar,
     NORMAL_GROUPS,
-    NumberMode,
     SquareValue,
 } from "./Types";
 

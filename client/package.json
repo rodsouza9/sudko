@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "jest": "^24.9.0",
+    "node-sass": "^4.14.1",
     "tslint": "^5.20.1",
     "typescript": "^3.7.4"
   }
