@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, {useEffect, useState} from "react";
+import React, {KeyboardEvent, useEffect, useState} from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Nav from "react-bootstrap/Nav";
@@ -7,6 +7,8 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import "./Login.css";
 import "./Menubar.css";
+import {KEY_COMMAND} from "../Types";
+import * as _ from "lodash";
 
 export function Login() {
     const [show, setShow] = useState(false);
@@ -27,17 +29,12 @@ export function Login() {
         const signInButton = document.getElementById("signIn");
         const container = document.getElementById("container");
         if (signInButton && signUpButton && container) {
-            // @ts-ignore
             signUpButton.addEventListener("click", () => {
                 console.log("up");
-                // @ts-ignore
                 container.classList.add("right-panel-active");
             });
-
-            // @ts-ignore
             signInButton.addEventListener("click", () => {
                 console.log("in");
-                // @ts-ignore
                 container.classList.remove("right-panel-active");
             });
         }
@@ -56,8 +53,8 @@ export function Login() {
                 <Modal.Dialog className = "diag">
                     <Modal.Body className = "mmodal">
                         <div className="container" id="container">
-                            {signUpForm()}
-                            {signInForm()}
+                            <SignUpForm/>
+                            <SignInForm/>
                             {overlayCont()}
                         </div>
                     </Modal.Body>
@@ -71,7 +68,15 @@ export function Login() {
     );
 }
 
-function signUpForm() {
+function SignUpForm() {
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const inputNameVal = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setName(e.target.value);
+    };
+
     return(
         <div className="form-container sign-up-container">
             <form action="#">
@@ -82,16 +87,37 @@ function signUpForm() {
                     <a href="#" className="social"><i className="fab fa-linkedin-in"></i></a>
                 </div>
                 <span>or use your email for registration</span>
-                <input type="text" placeholder="Name"/>
-                <input type="email" placeholder="Email"/>
-                <input type="password" placeholder="Password"/>
+                <input
+                    type="text"
+                    value={name}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setName(e.target.value);
+                    }}
+                    placeholder="Name"
+                />
+                <input
+                    type="email"
+                    value={email}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setEmail(e.target.value);
+                    }}
+                    placeholder="Email"
+                />
+                <input
+                    type="password"
+                    value={password}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setPassword(e.target.value);
+                    }}
+                    placeholder="Password"
+                />
                 <button>Sign Up</button>
             </form>
         </div>
     );
 }
 
-function signInForm() {
+function SignInForm() {
     return(
         <div className="form-container sign-in-container">
             <form action="#">

@@ -105,4 +105,4 @@ app.get('/authrequired', (req, res) => {
 
 //listen bruh
 app.listen(5000);
-console.log("This app is running on" + HTTP_SERVER)
+console.log("This app is running on " + HTTP_SERVER)
