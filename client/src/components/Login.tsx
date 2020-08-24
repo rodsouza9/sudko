@@ -72,11 +72,6 @@ function SignUpForm() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
-    const inputNameVal = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setName(e.target.value);
-    };
-
     return(
         <div className="form-container sign-up-container">
             <form action="#">
@@ -118,9 +113,22 @@ function SignUpForm() {
 }
 
 function SignInForm() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    function submitIn() {
+        console.log("submit initiated");
+        axios.post(`http://localhost:5000/login/`, {
+            email,
+            password,
+        })
+            .then((res) => {
+                console.log(res);
+                console.log(res.data);
+            });
+    }
     return(
         <div className="form-container sign-in-container">
-            <form action="#">
+            <form action="#" onSubmit={submitIn} >
                 <h1>Sign in</h1>
                 <div className="social-container">
                     <a href="#" className="social"><i className="fab fa-facebook-f"></i></a>
@@ -128,10 +136,23 @@ function SignInForm() {
                     <a href="#" className="social"><i className="fab fa-linkedin-in"></i></a>
                 </div>
                 <span>or use your account</span>
-                <input type="email" placeholder="Email"/>
-                <input type="password" placeholder="Password"/>
+                <input
+                    type="email"value={email}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setEmail(e.target.value);
+                    }}
+                    placeholder="Email"
+                />
+                <input
+                    type="password"
+                    value={password}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setPassword(e.target.value);
+                    }}
+                    placeholder="Password"
+                />
                 <a href="#">Forgot your password?</a>
-                <button>Sign In</button>
+                <button type="submit">Sign In</button>
             </form>
         </div>
     );
