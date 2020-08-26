@@ -83,21 +83,23 @@ app.get('/login', (req, res) => {
 // login post route
 app.post('/login', (req, res, next) => {
     console.log("inside /login post")
-    passport.authenticate('local', (err, user, info) => {
-        if(info) {return res.send(info.message)}
-        if (err) { return next(err); }
-        if (!user) { return res.redirect('/login'); }
-        req.login(user, (err) => {
+    passport.authenticate('local',
+        (err, user, info) => {
+            if(info) {return res.send(info.message)}
             if (err) { return next(err); }
-            return res.redirect('/authrequired');
-        })
-    })(req, res, next);
+            if (!user) { return res.redirect('/login'); }
+            req.login(user, (err) => {
+                if (err) { return next(err); }
+                return res.send(req.user);
+            })
+        }
+    )(req, res, next);
 })
 
 app.get('/authrequired', (req, res) => {
     console.log(`User authenticated? ${req.isAuthenticated()}`)
     if(req.isAuthenticated()) {
-        res.send('you hit the authentication endpoint\n')
+        res.send('req user' + JSON.stringify(req.user))
     } else {
         res.redirect('/')
     }
