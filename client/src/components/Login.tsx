@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, {AxiosResponse} from "axios";
 import React, {KeyboardEvent, useEffect, useState} from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -10,7 +10,14 @@ import "./Menubar.css";
 import {KEY_COMMAND} from "../Types";
 import * as _ from "lodash";
 
-export function Login() {
+export type User = any;
+
+export interface LoginProps {
+    user: User;
+    setUser: (user: User) => void;
+}
+
+export function Login(props: LoginProps) {
     const [show, setShow] = useState(false);
     function loginClick() {
         console.log("login clicked");
@@ -54,15 +61,15 @@ export function Login() {
                     <Modal.Body className = "mmodal">
                         <div className="container" id="container">
                             <SignUpForm/>
-                            <SignInForm/>
+                            <SignInForm user={props.user} setUser={props.setUser}/>
                             {overlayCont()}
                         </div>
                     </Modal.Body>
                 </Modal.Dialog>
             </Modal>
-            <Nav.Link href="#deets">More deets</Nav.Link>
+            <Nav.Link href="#deets">idk somthn</Nav.Link>
             <Button onClick={() => {setShow(true); }}
-                    variant="outline-primary">Dank memes
+                    variant="outline-primary">{props.user ? props.user.id : "login"}
             </Button>
         </Nav>
     );
@@ -112,7 +119,7 @@ function SignUpForm() {
     );
 }
 
-function SignInForm() {
+function SignInForm(props: LoginProps) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     function submitIn() {
@@ -122,8 +129,11 @@ function SignInForm() {
             password,
         })
             .then((res) => {
+                console.log("res:");
                 console.log(res);
                 console.log(res.data);
+                console.log(res.status);
+                props.setUser(res.data);
             });
     }
     return(

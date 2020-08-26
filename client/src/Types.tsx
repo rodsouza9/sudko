@@ -7,6 +7,7 @@ export * from "./components/Numpad";
 export * from "./components/Square";
 export * from "./components/ControlButtons";
 export * from "./components/EventPreventingButton";
+export * from "./components/Login";
 
 const NORMAL_GROUPS =
     [

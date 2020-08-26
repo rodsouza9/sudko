@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import "./App.css";
 import {
     Game,
@@ -8,7 +8,7 @@ import {
 } from "./Types";
 
 const App: React.FC = () => {
-
+    const [user, setUser] = useState(null);
     const vals =
         [null, 3, 1, 6, 7, null, 4, null, 9,
             null, null, null, 8, 3, null, null, null, null,
@@ -33,7 +33,7 @@ const App: React.FC = () => {
 
     return (
         <div className="App">
-            <Menubar/>
+            <Menubar user={user} setUser={setUser}/>
             <header className="App-header">
                 <Game
                     permanentValues={vals}
