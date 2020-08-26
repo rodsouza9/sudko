@@ -7,6 +7,7 @@ const path = require('path');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const axios = require('axios');
+var cors = require('cors');
 
 const HTTP_SERVER = 'http://localhost:5000/';
 const DB_SERVER = 'http://localhost:4000/';
@@ -68,8 +69,11 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(cors());
+
 // set path for routes
 app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'))

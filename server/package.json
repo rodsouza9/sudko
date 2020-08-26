@@ -8,11 +8,17 @@
     "server": "nodemon server.js"
   },
   "nodemonConfig": {
-    "ignore": ["sessions/", "../client/build"],
+    "ignore": [
+      "sessions/",
+      "../client/build"
+    ],
     "delay": "2500",
-    "watch": ["../client", "../server"],
+    "watch": [
+      "../client",
+      "../server"
+    ],
     "events": {
-      "restart": "cd ../client && node_modules/.bin/react-scripts build"
+      "restart": "osascript -e 'display notification \"app restarted\" with title \"nodemon\"'"
     },
     "execMap": {
       "ts": "ts-node"
@@ -26,6 +32,7 @@
     "@types/node": "^14.0.5",
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "passport": "^0.4.1",
