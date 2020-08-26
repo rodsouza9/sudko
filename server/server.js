@@ -84,6 +84,11 @@ app.get('/login', (req, res) => {
     res.send(`You got the login page!\n`)
 })
 
+app.get('/logout', function(req, res){
+    req.logout();
+    res.redirect('/');
+});
+
 // login post route
 app.post('/login', (req, res, next) => {
     console.log("inside /login post")
@@ -105,7 +110,7 @@ app.get('/authrequired', (req, res) => {
     if(req.isAuthenticated()) {
         res.send('req user' + JSON.stringify(req.user))
     } else {
-        res.redirect('/')
+        res.send('You are not authenticated');
     }
 })
 
