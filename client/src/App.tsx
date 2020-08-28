@@ -1,4 +1,5 @@
-import React, {useState} from "react";
+import axios from "axios";
+import React, {useEffect, useState} from "react";
 import "./App.css";
 import {
     Game,
@@ -8,7 +9,8 @@ import {
 } from "./Types";
 
 const App: React.FC = () => {
-    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(getUser);
     const vals =
         [null, 3, 1, 6, 7, null, 4, null, 9,
             null, null, null, 8, 3, null, null, null, null,
@@ -31,17 +33,29 @@ const App: React.FC = () => {
             63, 64, 65, 66, 67, 68, 69, 70, 71,
             72, 73, 74, 75, 76, 77, 78, 79, 80] as Array<SquareValue | null>;
 
-    return (
-        <div className="App">
-            <Menubar user={user} setUser={setUser}/>
-            <header className="App-header">
-                <Game
-                    permanentValues={vals}
-                    groupings={NORMAL_GROUPS}
-                />
-            </header>
-        </div>
-    );
+    function getUser() {
+        axios.get("http://localhost:5000/initial-user/")
+            .then((res) => {
+                setLoading(false);
+                return(res.data);
+            });
+    }
+
+    if (loading) {
+        return( <div>loading</div>);
+    } else {
+        return (
+            <div className="App">
+                <Menubar user={user} setUser={setUser}/>
+                <header className="App-header">
+                    <Game
+                        permanentValues={vals}
+                        groupings={NORMAL_GROUPS}
+                    />
+                </header>
+            </div>
+        );
+    }
 };
 
 export default App;

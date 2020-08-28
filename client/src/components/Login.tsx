@@ -7,8 +7,7 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import "./Login.css";
 import "./Menubar.css";
-import {KEY_COMMAND} from "../Types";
-import * as _ from "lodash";
+import {isCombinedNodeFlagSet} from "tslint";
 
 export type User = any;
 
@@ -29,6 +28,16 @@ export function Login(props: LoginProps) {
                 console.log(res);
                 console.log(res.data);
             });
+    }
+
+    function logout() {
+        console.log("logout clicked");
+        axios.get("http://localhost:5000/logout/")
+            .then(
+                (res) => {
+                    console.log(res.data);
+                },
+            );
     }
 
     useEffect(() => {
@@ -67,10 +76,24 @@ export function Login(props: LoginProps) {
                     </Modal.Body>
                 </Modal.Dialog>
             </Modal>
-            <Nav.Link href="#deets">idk somthn</Nav.Link>
-            <Button onClick={() => {setShow(true); }}
+            <Nav.Link
+                onClick={() => {
+                    axios.get("http://localhost:5000/authrequired/")
+                        .then((res) => {
+                            console.log(res.data);
+                            });
+                }}>
+                idk somthn
+            </Nav.Link>
+            <Button className="login-button"
+                    onClick={() => {setShow(true); }}
                     variant="outline-primary">{props.user ? props.user.id : "login"}
             </Button>
+            <NavDropdown title="username" alignRight id="basic-nav-dropdown">
+
+                <NavDropdown.Item onClick={() => {}}>Profile</NavDropdown.Item>
+                <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
+            </NavDropdown>
         </Nav>
     );
 }

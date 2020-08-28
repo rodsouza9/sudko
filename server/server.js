@@ -85,6 +85,7 @@ app.get('/login', (req, res) => {
 })
 
 app.get('/logout', function(req, res){
+    console.log("log out on server side")
     req.logout();
     res.redirect('/');
 });
@@ -103,6 +104,14 @@ app.post('/login', (req, res, next) => {
             })
         }
     )(req, res, next);
+})
+
+app.get('/initial-user', (req, res) => {
+    if (req.isAuthenticated) {
+        res.send(req.user);
+    } else {
+        res.send({user: null});
+    }
 })
 
 app.get('/authrequired', (req, res) => {
