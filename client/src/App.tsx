@@ -10,7 +10,10 @@ import {
 
 const App: React.FC = () => {
     const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(getUser);
+    const [user, setUser] = useState(null);
+    useEffect(() => {
+        getUser();
+    }, []);
     const vals =
         [null, 3, 1, 6, 7, null, 4, null, 9,
             null, null, null, 8, 3, null, null, null, null,
@@ -34,10 +37,11 @@ const App: React.FC = () => {
             72, 73, 74, 75, 76, 77, 78, 79, 80] as Array<SquareValue | null>;
 
     function getUser() {
-        axios.get("http://localhost:5000/initial-user/")
+        return axios.get("http://localhost:5000/initial-user/")
             .then((res) => {
                 setLoading(false);
-                return(res.data);
+                setUser(res.data);
+                console.log(res);
             });
     }
 

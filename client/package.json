@@ -23,7 +23,7 @@
     "ts-node": "^8.10.1"
   },
   "scripts": {
-    "start": "PORT=3006 react-scripts start",
+    "start": "react-scripts start",
     "build": "node_modules/.bin/react-scripts build",
     "test": "node_modules/.bin/jest",
     "eject": "node_modules/.bin/react-scripts eject"

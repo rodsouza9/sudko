@@ -7,7 +7,6 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import "./Login.css";
 import "./Menubar.css";
-import {isCombinedNodeFlagSet} from "tslint";
 
 export type User = any;
 
