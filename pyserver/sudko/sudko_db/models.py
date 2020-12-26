@@ -8,7 +8,7 @@ LENGTH_OF_PUZZLE = 250
 """
 Puzzle: used to store initial state of sudko games
 - name : name of puzzle
-- values: array 
+- values: array
 - description: description of puzzle
 - likes: the number of likes
 - difficulty: {eazy, medium, hard, N/A}
@@ -16,12 +16,10 @@ Puzzle: used to store initial state of sudko games
 - num_solved : number of users to have completed the puzzle
 - average_time : average completion time of puzzle
 - best_time : best time of puzzle
-
 """
-
 class Puzzle(models.Model):
     name = models.CharField(max_length=200)
-    values = models.CharField(max_length=LENGTH_OF_PUZZLE)
+    values = models.CharField(max_length=LENGTH_OF_PUZZLE) # validators=[validate_comma_separated_integer_list])
     description = models.TextField(blank=True)
 
     EASY, MED, HARD, NA = "E", "M", "H", "N"
@@ -42,12 +40,14 @@ class Puzzle(models.Model):
     average_time = models.DurationField()
     best_time = models.DurationField()
 
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self):
+        return self.name +" : [" + str(self.values)[0:20] + " ..."
 
 
 class PuzzleAdmin(admin.ModelAdmin):
     pass
 admin.site.register(Puzzle, PuzzleAdmin)
-
