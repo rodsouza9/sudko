@@ -6,7 +6,14 @@ import {
     Menubar,
     NORMAL_GROUPS,
     SquareValue,
+    Home
 } from "./Types";
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+    Link
+  } from "react-router-dom";
 
 const App: React.FC = () => {
     const [loading, setLoading] = useState(true);
@@ -49,15 +56,24 @@ const App: React.FC = () => {
         return( <div>loading</div>);
     } else {
         return (
-            <div className="App">
-                <Menubar user={user} setUser={setUser}/>
-                <header className="App-header">
-                    <Game
-                        permanentValues={vals}
-                        groupings={NORMAL_GROUPS}
-                    />
-                </header>
-            </div>
+            <Router>
+                <div className="App">
+                    <Menubar user={user} setUser={setUser}/>
+                    <header className="App-header">
+                        <Switch>
+                            <Route path="/home">
+                                <Home/>
+                            </Route>
+                            <Route path="/">
+                                <Game
+                                    permanentValues={vals}
+                                    groupings={NORMAL_GROUPS}
+                                />
+                            </Route>
+                        </Switch>
+                    </header>
+                </div>
+            </Router>
         );
     }
 };
