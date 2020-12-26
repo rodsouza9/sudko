@@ -26,17 +26,11 @@ export function Home(props: HomeProps) {
     }, []);
 
     function render_puzzles() {
-        const list = [];
-        for (const puzzle of puzzles) {
-            list.push(<div>{puzzle.values}</div>);
-        }
-        return list
+        return puzzles.map((puzzle) => render_puzzle(puzzle.name));
     }
 
     function render_puzzle(values: String) {
-        return (
-            <p>{values}</p>
-        )
+        return <p>{values}</p>
     }
 
     return (
