@@ -3,13 +3,14 @@ import Button from "react-bootstrap/Button";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
+import { Link } from "react-router-dom";
 import {Login, LoginProps} from "./Login";
 import "./Menubar.css";
 
 export function Menubar(props: LoginProps) {
     return (
         <Navbar className="Navbar" bg="light" expand="sm" sticky="top">
-            <Navbar.Brand href="/home">SUDKO</Navbar.Brand>
+            <Navbar.Brand><Link to="/home">SUDKO</Link></Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="mr-auto">
