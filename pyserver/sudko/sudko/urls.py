@@ -16,7 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+import sudko_db
+
 urlpatterns = [
     path('sudko_db/', include('sudko_db.urls')),
     path('admin/', admin.site.urls),
+    path('initial-user/', sudko_db.views.initialUser),
+    path('login/', sudko_db.views.login_user),
 ]

@@ -7,6 +7,7 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import "./Login.css";
 import "./Menubar.css";
+import * as API from "./API";
 
 export type User = any;
 
@@ -17,17 +18,6 @@ export interface LoginProps {
 
 export function Login(props: LoginProps) {
     const [show, setShow] = useState(false);
-    function loginClick() {
-        console.log("login clicked");
-        axios.post(`http://localhost:5000/login/`, {
-            email: "user1@gmail.com",
-            password: "password",
-        })
-            .then((res) => {
-                console.log(res);
-                console.log(res.data);
-            });
-    }
 
     function logout() {
         console.log("logout clicked");
@@ -146,16 +136,10 @@ function SignInForm(props: LoginProps) {
     const [password, setPassword] = useState("");
     function submitIn() {
         console.log("submit initiated");
-        axios.post(`http://localhost:5000/login/`, {
-            email,
-            password,
-        })
+        API.login(email, password)
             .then((res) => {
-                console.log("res:");
+                console.log("logged in");
                 console.log(res);
-                console.log(res.data);
-                console.log(res.status);
-                props.setUser(res.data);
             });
     }
     return(
