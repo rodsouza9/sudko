@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from sudko_db.models import Puzzle
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 import json
 
 def index(request):
@@ -32,16 +32,19 @@ def initialUser(request):
             "user" : None
         })
 
+@csrf_exempt
 def signup(request):
-    pass
+    req = json.loads(request.body)
+    user = req["usernmae"]
+    email, password = req["email"], req["password"]
+    first_name, last_name = req["first_name"], req["last_name"]
+    user = User.objects.create_user(user, email=email, password=password)
+    user.save()
 
 @csrf_exempt
 def login_user(request):
     if request.method == 'POST':
         req = json.loads(request.body)
-        print(" P R I N T ___---___")
-        print(req["Username"])
-        print(req["Password"])
         user = authenticate(request, username=req["Username"], password=req["Password"])
         if user is not None:
             login(request, user)
@@ -52,4 +55,4 @@ def login_user(request):
         return HttpResponse("go away")
 
 def signout(request):
-    pass
+    logout(request)
