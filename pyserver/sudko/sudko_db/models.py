@@ -1,14 +1,50 @@
 from django.db import models
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.core.validators import validate_comma_separated_integer_list
 
+# Puzzle values are stored as a string of ints sperated by ", "
 LENGTH_OF_PUZZLE = 250
+
+# Validators for the value of
+# validators=[validate_comma_separated_integer_list])
+
+
+"""
+UserInfo - Extension to the User model
+ - user : one-to-one relationship with User
+ - user_puzzle: one-to-many relationship with UserPuzzle
+"""
+class UserInfo(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+"""
+User Puzzle - Table of puzzles that have been started by users
+A many-to-one relationship with UserInfo
+A one-to-one realtionship with Puzzle.
+- puzzle : points to Puzzle entry
+- user_info : points to User_Info entry
+- solved : boolean if puzzle has been solved
+- values : user inputed values
+- time : time taken
+- time_valid : bool if time should count
+"""
+class UserPuzzle(models.Model):
+    puzzle = models.OneToOneField(Puzzle, on_delete=models.CASCADE)
+    user_info = models.ForeignKey(UserInfo, on_delete=models.CASCADE)
+    solved = models.BooleanField(default=False)
+    # Values must contain order of additions to board
+    values = models.CharField(max_length=LENGTH_OF_PUZZLE)
+    time = models.DurationField()
+    time_valid = models.BooleanField(default=True)
+
 
 
 """
 Puzzle: used to store initial state of sudko games
 - name : name of puzzle
 - values: array
+TODO: add field solution which is values without zeroes
 - description: description of puzzle
 - likes: the number of likes
 - difficulty: {eazy, medium, hard, N/A}
@@ -19,7 +55,7 @@ Puzzle: used to store initial state of sudko games
 """
 class Puzzle(models.Model):
     name = models.CharField(max_length=200)
-    values = models.CharField(max_length=LENGTH_OF_PUZZLE) # validators=[validate_comma_separated_integer_list])
+    values = models.CharField(max_length=LENGTH_OF_PUZZLE)
     description = models.TextField(blank=True)
 
     EASY, MED, HARD, NA = "E", "M", "H", "N"
