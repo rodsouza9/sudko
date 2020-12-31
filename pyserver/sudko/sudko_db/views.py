@@ -35,10 +35,10 @@ def initialUser(request):
 @csrf_exempt
 def signup(request):
     req = json.loads(request.body)
-    user = req["usernmae"]
+    username = req["usernmae"]
     email, password = req["email"], req["password"]
     first_name, last_name = req["first_name"], req["last_name"]
-    user = User.objects.create_user(user, email=email, password=password)
+    user = User.objects.create_user(username, first_name=first_name, last_name=last_name, email=email, password=password)
     user.save()
 
 @csrf_exempt
@@ -56,3 +56,8 @@ def login_user(request):
 
 def signout(request):
     logout(request)
+
+
+# TODO: Add puzzle
+# TODO: add_user_puzzle
+# TODO: update_user_puzzle_values, update_user_puzzle_time, update_user_puzzle_solved -> maybe just one ???

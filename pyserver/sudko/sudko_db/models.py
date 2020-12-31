@@ -18,27 +18,6 @@ UserInfo - Extension to the User model
 class UserInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-"""
-User Puzzle - Table of puzzles that have been started by users
-A many-to-one relationship with UserInfo
-A one-to-one realtionship with Puzzle.
-- puzzle : points to Puzzle entry
-- user_info : points to User_Info entry
-- solved : boolean if puzzle has been solved
-- values : user inputed values
-- time : time taken
-- time_valid : bool if time should count
-"""
-class UserPuzzle(models.Model):
-    puzzle = models.OneToOneField(Puzzle, on_delete=models.CASCADE)
-    user_info = models.ForeignKey(UserInfo, on_delete=models.CASCADE)
-    solved = models.BooleanField(default=False)
-    # Values must contain order of additions to board
-    values = models.CharField(max_length=LENGTH_OF_PUZZLE)
-    time = models.DurationField()
-    time_valid = models.BooleanField(default=True)
-
-
 
 """
 Puzzle: used to store initial state of sudko games
@@ -87,3 +66,24 @@ class Puzzle(models.Model):
 class PuzzleAdmin(admin.ModelAdmin):
     pass
 admin.site.register(Puzzle, PuzzleAdmin)
+
+
+"""
+User Puzzle - Table of puzzles that have been started by users
+A many-to-one relationship with UserInfo
+A one-to-one realtionship with Puzzle.
+- puzzle : points to Puzzle entry
+- user_info : points to User_Info entry
+- solved : boolean if puzzle has been solved
+- values : user inputed values
+- time : time taken
+- time_valid : bool if time should count
+"""
+class UserPuzzle(models.Model):
+    puzzle = models.OneToOneField(Puzzle, on_delete=models.CASCADE)
+    user_info = models.ForeignKey(UserInfo, on_delete=models.CASCADE)
+    solved = models.BooleanField(default=False)
+    # Values must contain order of additions to board
+    values = models.CharField(max_length=LENGTH_OF_PUZZLE)
+    time = models.DurationField()
+    time_valid = models.BooleanField(default=True)
