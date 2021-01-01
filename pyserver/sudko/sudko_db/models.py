@@ -22,6 +22,10 @@ class UserInfo(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class UserInfoAdmin(admin.ModelAdmin):
+    pass
+admin.site.register(UserInfo, UserInfoAdmin)
+
 
 """
 Puzzle: used to store initial state of sudko games
@@ -101,3 +105,7 @@ class UserPuzzle(models.Model):
         constraints = [
             UniqueConstraint(fields=['user_info', 'puzzle'], name='user_info,puzzle'),
         ]
+
+class UserPuzzleAdmin(admin.ModelAdmin):
+    pass
+admin.site.register(UserPuzzle, UserPuzzleAdmin)
