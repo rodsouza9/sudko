@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import UniqueConstraint
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.validators import validate_comma_separated_integer_list
@@ -17,6 +18,9 @@ UserInfo - Extension to the User model
 """
 class UserInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 """
@@ -50,6 +54,7 @@ class Puzzle(models.Model):
         default=NA,
     )
 
+    # TODO: remove and move to endpoints
     num_attempts = models.PositiveBigIntegerField()
     num_solved = models.PositiveBigIntegerField()
     average_time = models.DurationField()
@@ -68,6 +73,7 @@ class PuzzleAdmin(admin.ModelAdmin):
 admin.site.register(Puzzle, PuzzleAdmin)
 
 
+# Unique (user, puzzle)
 """
 User Puzzle - Table of puzzles that have been started by users
 A many-to-one relationship with UserInfo
@@ -80,10 +86,18 @@ A one-to-one realtionship with Puzzle.
 - time_valid : bool if time should count
 """
 class UserPuzzle(models.Model):
-    puzzle = models.OneToOneField(Puzzle, on_delete=models.CASCADE)
     user_info = models.ForeignKey(UserInfo, on_delete=models.CASCADE)
+    puzzle = models.ForeignKey(Puzzle, on_delete=models.CASCADE)
     solved = models.BooleanField(default=False)
     # Values must contain order of additions to board
     values = models.CharField(max_length=LENGTH_OF_PUZZLE)
     time = models.DurationField()
     time_valid = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['user_info', 'puzzle'], name='user_info,puzzle'),
+        ]
