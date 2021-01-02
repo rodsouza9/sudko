@@ -23,4 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('initial-user/', sudko_db.views.initialUser),
     path('login/', sudko_db.views.login_user),
+    path('signup/', sudko_db.views.signup),
+    path('isauth/', sudko_db.views.initialUser),
+    path('logout/', sudko_db.views.signout),
 ]
