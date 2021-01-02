@@ -73,6 +73,7 @@ def login_user(request):
 
 def signout(request):
     logout(request)
+    return HttpResponse("signed out")
 
 
 # TODO: Add puzzle
