@@ -13,7 +13,12 @@ export function getPuzzles(): Promise<GetPuzzlesResponse> {
 
 export function login(un: String, pw: String) {
     return axios.post(DATABASE_HOST + "login/", {
-        Username: un,
-        Password: pw
+        username: un,
+        password: pw
     }).then(r => r.data);
+}
+
+export function logout() {
+    return axios.get(DATABASE_HOST + "logout/")
+        .then(r => r.data);
 }

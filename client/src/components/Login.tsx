@@ -21,12 +21,11 @@ export function Login(props: LoginProps) {
 
     function logout() {
         console.log("logout clicked");
-        axios.get("http://localhost:5000/logout/")
-            .then(
-                (res) => {
-                    console.log(res.data);
-                },
-            );
+        API.logout()
+            .then((res) => {
+                console.log("logged in");
+                console.log(res);
+            });
     }
 
     useEffect(() => {
@@ -65,13 +64,7 @@ export function Login(props: LoginProps) {
                     </Modal.Body>
                 </Modal.Dialog>
             </Modal>
-            <Nav.Link
-                onClick={() => {
-                    axios.get("http://localhost:5000/authrequired/")
-                        .then((res) => {
-                            console.log(res.data);
-                            });
-                }}>
+            <Nav.Link>
                 idk somthn
             </Nav.Link>
             <Button className="login-button"
@@ -110,12 +103,12 @@ function SignUpForm() {
                     placeholder="Name"
                 />
                 <input
-                    type="email"
+                    type="username"
                     value={email}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         setEmail(e.target.value);
                     }}
-                    placeholder="Email"
+                    placeholder="username"
                 />
                 <input
                     type="password"
@@ -153,11 +146,11 @@ function SignInForm(props: LoginProps) {
                 </div>
                 <span>or use your account</span>
                 <input
-                    type="email"value={email}
+                    type="username"value={email}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         setEmail(e.target.value);
                     }}
-                    placeholder="Email"
+                    placeholder="Username"
                 />
                 <input
                     type="password"
