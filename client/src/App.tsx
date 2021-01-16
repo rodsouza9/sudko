@@ -14,6 +14,7 @@ import {
     Route,
     Link
   } from "react-router-dom";
+import * as API from "./components/API";
 
 const App: React.FC = () => {
     const [loading, setLoading] = useState(true);
@@ -44,10 +45,10 @@ const App: React.FC = () => {
             72, 73, 74, 75, 76, 77, 78, 79, 80] as Array<SquareValue | null>;
 
     function getUser() {
-        return axios.get("http://localhost:5000/initial-user/")
+        API.is_auth()
             .then((res) => {
                 setLoading(false);
-                setUser(res.data);
+                //setUser(res.data);
                 console.log(res);
             });
     }
