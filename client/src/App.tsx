@@ -48,7 +48,7 @@ const App: React.FC = () => {
         API.is_auth()
             .then((res) => {
                 setLoading(false);
-                //setUser(res.data);
+                setUser(res.username);
                 console.log(res);
             });
     }

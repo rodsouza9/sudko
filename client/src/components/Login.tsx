@@ -69,10 +69,9 @@ export function Login(props: LoginProps) {
             </Nav.Link>
             <Button className="login-button"
                     onClick={() => {setShow(true); }}
-                    variant="outline-primary">{props.user ? props.user.id : "login"}
+                    variant="outline-primary">{props.user ? props.user : "login"}
             </Button>
-            <NavDropdown title="username" alignRight id="basic-nav-dropdown">
-
+            <NavDropdown title={props.user ? props.user : "username"} alignRight id="basic-nav-dropdown">
                 <NavDropdown.Item onClick={() => {}}>Profile</NavDropdown.Item>
                 <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
             </NavDropdown>
@@ -131,8 +130,10 @@ function SignInForm(props: LoginProps) {
         console.log("submit initiated");
         API.login(email, password)
             .then((res) => {
+                console.log(props.user)
                 console.log("logged in");
                 console.log(res);
+                props.setUser(res.username)
             });
     }
     return(
