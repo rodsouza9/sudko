@@ -1,5 +1,5 @@
 .Controls {
-    border: medium solid orange;
+    /*border: medium solid orange;*/
     grid-area: controls;
     display: grid;
     grid-template: 1fr 1fr 1fr 1fr / 1fr;
@@ -33,4 +33,22 @@
     min-height: 100%;
     line-height: 0;
     font-size: 10em;
+    color: white;
+    background-color: #2b99ff;
+    border-color: #2b99ff;
+}
+
+.control-button:hover {
+    background-color: #2bc3ff;
+    border-color: #2bc3ff;
+}
+
+.turnon {
+    background-color: #2bc3ff;
+    border-color: #2bc3ff;
+}
+
+.turnoff {
+    background-color: #2b99ff;
+    border-color: #2b99ff;
 }

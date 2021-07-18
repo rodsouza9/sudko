@@ -1,18 +1,27 @@
-import * as _ from "lodash";
-import React, {KeyboardEvent, RefObject, SyntheticEvent} from "react";
-import Button, {ButtonProps} from "react-bootstrap/Button";
+import axios from "axios";
+import React, {useEffect, useState} from "react";
 import "./App.css";
 import {
-    AsciiWrapper,
     Game,
     Menubar,
     NORMAL_GROUPS,
-    NumberMode,
     SquareValue,
+    Home
 } from "./Types";
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+    Link
+  } from "react-router-dom";
+import * as API from "./components/API";
 
 const App: React.FC = () => {
-
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    useEffect(() => {
+        getUser();
+    }, []);
     const vals =
         [null, 3, 1, 6, 7, null, 4, null, 9,
             null, null, null, 8, 3, null, null, null, null,
@@ -35,17 +44,39 @@ const App: React.FC = () => {
             63, 64, 65, 66, 67, 68, 69, 70, 71,
             72, 73, 74, 75, 76, 77, 78, 79, 80] as Array<SquareValue | null>;
 
-    return (
-        <div className="App">
-            <Menubar/>
-            <header className="App-header">
-                <Game
-                    permanentValues={vals}
-                    groupings={NORMAL_GROUPS}
-                />
-            </header>
-        </div>
-    );
+    function getUser() {
+        API.is_auth()
+            .then((res) => {
+                setLoading(false);
+                setUser(res.username);
+                console.log(res);
+            });
+    }
+
+    if (loading) {
+        return( <div>loading</div>);
+    } else {
+        return (
+            <Router>
+                <div className="App">
+                    <Menubar user={user} setUser={setUser}/>
+                    <header className="App-header">
+                        <Switch>
+                            <Route path="/home">
+                                <Home/>
+                            </Route>
+                            <Route path="/">
+                                <Game
+                                    permanentValues={vals}
+                                    groupings={NORMAL_GROUPS}
+                                />
+                            </Route>
+                        </Switch>
+                    </header>
+                </div>
+            </Router>
+        );
+    }
 };
 
 export default App;

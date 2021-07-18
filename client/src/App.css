@@ -46,7 +46,7 @@
 
 .Footer {
     height: 90%;
-    border: medium solid forestgreen;
+    /*border: medium solid forestgreen;*/
     grid-area: footer;
     display: grid;
     grid-template: 1fr / 1fr 1fr;

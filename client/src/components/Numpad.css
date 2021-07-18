@@ -1,5 +1,5 @@
 .Numpad {
-    border: medium solid dodgerblue;
+    /*border: medium solid dodgerblue;*/
     grid-area: numpad;
     display: grid;
     grid-template: 1fr 1fr 1fr 1fr / 1fr 1fr 1fr;
@@ -16,6 +16,8 @@
     min-width: 100%;
     max-height: 100%;
     min-height: 100%;
+    background-color: #2b99ff;
+    border-color: #2b99ff;
 }
 
 .delete-button {
