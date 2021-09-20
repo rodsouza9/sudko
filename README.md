@@ -1,4 +1,8 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is an open source website to enable users to create, upload, play, and rank sudoku variant puzzles.
+
+This idea was inspired by the [Cracking the Cryptic][https://www.youtube.com/channel/UCC-UOdK8-mIjxBQm_ot1T-Q] YouTube channel. These creators solve challenging sudoku variants and have gotten fairly popular over the years (highly reccomend checking them out).
+
+
 
 ## Available Scripts
 
