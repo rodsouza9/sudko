@@ -6,7 +6,7 @@
     justify-content: center;
     align-items: center;
     font-weight: 400;
-    color: royalblue;
+    color: #2b99ff;
     line-height: 0;
     letter-spacing: 0;
 }
@@ -33,7 +33,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    color: royalblue;
+    color: #2b99ff;
 }
 
 .highlight {

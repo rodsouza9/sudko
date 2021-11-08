@@ -26,9 +26,9 @@
     left: 0;
     width: 100%;
     height: 100%; /* uaw vh for scale*/
-    border-style: solid;
+    /*border-style: solid;
     border-width: 2px;
-    border-color: indigo;
+    border-color: indigo;*/
     display: flex;
     justify-content: space-around;
 }
@@ -56,7 +56,7 @@
 
 
 .button-box {
-    border: medium solid darkseagreen;
+    /*border: medium solid darkseagreen;*/
     height: 100%;
     width: calc((35/80) *100%);
     display: flex;
@@ -66,7 +66,7 @@
 }
 
 .button-container {
-    border: medium solid burlywood;
+    /*border: medium solid burlywood;*/
     height: 55%;
     width: 77%;
     display: grid;
